@@ -1,5 +1,11 @@
 // Product card: second image on hover + buy panel.
 
+// SCSS variables for hover panel
+$brunko-hover-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+$brunko-hover-transition: 0.2s ease;
+$brunko-panel-padding: 0.75rem;
+$brunko-panel-gap: 0.5rem;
+
 // Hide product description text (correct selector: .product-description)
 .product-description {
     display: none;
@@ -22,6 +28,7 @@
     background: var(--brunko-color-surface);
     color: var(--brunko-color-text);
     font-family: var(--brunko-font-base);
+    transition: box-shadow $brunko-hover-transition;
 }
 
 // --- second image -------------------------------------------------------
@@ -39,11 +46,12 @@
 
 .brunko-buy-row {
     display: flex;
-    align-items: stretch;
-    gap: 0.5rem;
+    align-items: center;
+    gap: $brunko-panel-gap;
 
     .brunko-qty {
         flex: 0 0 auto;
+        max-width: 90px;
 
         .quantity-selector-group {
             flex-wrap: nowrap;
@@ -58,14 +66,14 @@
         }
     }
 
-    .d-grid {
-        flex: 1 1 auto;
-    }
-
     .btn-buy {
+        flex: 1 1 auto;
         background-color: var(--brunko-color-primary);
         border-color: var(--brunko-color-primary);
         color: var(--brunko-color-primary-contrast);
+        white-space: nowrap;
+        min-height: auto;
+        padding: 0.5rem 1rem;
     }
 
     .btn:focus-visible,
@@ -92,6 +100,12 @@
 // --- devices with real hover: panel under the card, absolutely positioned ---
 
 @media (hover: hover) and (pointer: fine) {
+    // Card elevation on hover
+    .product-box:hover,
+    .product-box:focus-within {
+        box-shadow: $brunko-hover-shadow;
+    }
+
     .product-box:hover .product-image-secondary {
         opacity: 1;
     }
@@ -103,7 +117,7 @@
         left: -1px;
         z-index: 20;
         margin-top: 0;
-        padding: 0.75rem;
+        padding: $brunko-panel-padding;
         border: 1px solid var(--brunko-color-border);
         border-top: 0;
         border-radius: 0 0 var(--brunko-radius) var(--brunko-radius);
