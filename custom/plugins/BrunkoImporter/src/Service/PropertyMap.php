@@ -40,6 +40,11 @@ final class PropertyMap
         'grafitová' => '#383e42',
         'medená' => '#b87333',
         'bronzová' => '#cd7f32',
+        'prírodná' => '#D0A67D', // natural (drevo)
+        'dub' => '#b8935a',
+        'orech' => '#6b4a32',
+        'číra' => '#e8f1f5',
+        'priehľadná' => '#e8f1f5',
     ];
 
     /** Zobrazovany nazov skupiny. */
@@ -54,13 +59,47 @@ final class PropertyMap
         return self::GROUPS[$param]['displayType'] ?? null;
     }
 
+    /**
+     * Zobrazovany nazov hodnoty: farby sa zjednotia na zenský rod ("Prírodné"/"Prírodný" => "Prírodná"),
+     * aby sa v e-shope nezobrazovali dve varianty tej istej farby. Ostatne hodnoty sa nemenia.
+     */
+    public static function normalizeValue(string $param, string $value): string
+    {
+        if (self::displayType($param) !== 'color') {
+            return $value;
+        }
+        $canonical = self::canonicalColor($value);
+
+        return $canonical !== null ? mb_strtoupper(mb_substr($canonical, 0, 1)) . mb_substr($canonical, 1) : $value;
+    }
+
     /** Hex kod farby pre hodnotu, ak je skupina farebna a farbu poznáme. */
     public static function colorHex(string $param, string $value): ?string
     {
         if (self::displayType($param) !== 'color') {
             return null;
         }
+        $canonical = self::canonicalColor($value);
 
-        return self::COLORS[mb_strtolower(trim($value))] ?? null;
+        return $canonical !== null ? self::COLORS[$canonical] : null;
+    }
+
+    /** Kluc v COLORS pre hodnotu (presne, alebo bez ohladu na rod: prirodne/prirodny/prirodna). */
+    private static function canonicalColor(string $value): ?string
+    {
+        $v = mb_strtolower(trim($value));
+        if (isset(self::COLORS[$v])) {
+            return $v;
+        }
+        if (mb_strlen($v) >= 5) {
+            $stem = mb_substr($v, 0, -1);
+            foreach (array_keys(self::COLORS) as $name) {
+                if (mb_strlen($name) >= 5 && mb_substr($name, 0, -1) === $stem) {
+                    return $name;
+                }
+            }
+        }
+
+        return null;
     }
 }

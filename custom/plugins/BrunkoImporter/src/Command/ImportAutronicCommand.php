@@ -180,6 +180,32 @@ class ImportAutronicCommand extends Command
             $batchMeta = [];
         };
 
+        // --- 5-. stare hodnoty farieb (iny rod, napr. "Prirodne" => "Prirodna"): zrusia sa, aby produkty nemali dve varianty tej istej farby ---
+        $oldOptionIds = [];
+        foreach ($items as $p) {
+            foreach (self::PROPERTY_PARAMS as $param) {
+                $values = [$p['params'][$param]['value'] ?? ''];
+                if ($param === self::VARIANT_PARAM) {
+                    $values = array_merge($values, array_values($p['color_variants'] ?? []));
+                }
+                foreach ($values as $v) {
+                    if ($v !== '' && mb_strtolower(PropertyMap::normalizeValue($param, $v)) !== mb_strtolower($v)) {
+                        $oldOptionIds[md5('brunko:po:' . $param . ':' . mb_strtolower($v))] = true;
+                    }
+                }
+            }
+        }
+        if ($oldOptionIds) {
+            $io->writeln(sprintf('Stare hodnoty farieb na zlucenie: %d', count($oldOptionIds)), OutputInterface::VERBOSITY_VERBOSE);
+            if (!$dry) {
+                foreach (array_keys($oldOptionIds) as $oldId) {
+                    // konfigurator hlavnych produktov nema kaskadu, vazby product_property / product_option ano; produkty sa v tomto behu prepisu
+                    $this->db->executeStatement('DELETE FROM product_configurator_setting WHERE property_group_option_id = UNHEX(?)', [$oldId]);
+                    $this->db->executeStatement('DELETE FROM property_group_option WHERE id = UNHEX(?)', [$oldId]);
+                }
+            }
+        }
+
         // --- 5a. farebne varianty (feed: ColorVariants) -> jeden hlavny produkt + varianty ---
         $groups = $this->buildGroups($items, $io);
         $grouped = [];
@@ -243,9 +269,15 @@ class ImportAutronicCommand extends Command
 
             $io->writeln(sprintf('  varianty: %s "%s" <- %s', $parentNumber, $parentName, implode(', ', array_map(fn ($c) => $c . ' (' . $colors[$c] . ')', $codes))), OutputInterface::VERBOSITY_VERBOSE);
 
+            // V konfiguratore hlavneho produktu (prepinac farieb v zozname aj vyber farby v detaile) su len varianty skladom.
+            // Vypredane varianty ostavaju neaktivne (nie su v zozname, detaile ani vo vyhladavani). Ak nie je skladom ziadny, ostanu vsetky
+            // (hlavny produkt je vtedy neaktivny).
+            $inStock = array_filter($members, fn (array $m): bool => $m['stock'] >= $m['min_qty']);
+            $settingColors = $inStock ? array_intersect_key($colors, $inStock) : $colors;
+
             $memberHashes = [];
             foreach ($members as $c => $m) {
-                $memberHashes[$c] = md5(json_encode($this->hashBase($m), JSON_UNESCAPED_UNICODE) . $parentId);
+                $memberHashes[$c] = md5(json_encode($this->hashBase($m), JSON_UNESCAPED_UNICODE) . $parentId . ':settings2');
             }
             $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors], JSON_UNESCAPED_UNICODE));
             $parentIsNew = !isset($state[$parentKey]);
@@ -261,10 +293,22 @@ class ImportAutronicCommand extends Command
             }
 
             $catId = $this->categories->ensure($first['cat_code'], $first['cat_name'], $dry);
-            $parentRow = $this->buildParent($parentId, $parentNumber, $parentName, $members, $colors, $catId, $taxId, $systemLang, $skLang, $sc['id'], $parentIsNew);
+            $parentRow = $this->buildParent($parentId, $parentNumber, $parentName, $members, $settingColors, $catId, $taxId, $systemLang, $skLang, $sc['id'], $parentIsNew);
             $parentIsNew ? $stats['new']++ : $stats['changed']++;
             $batchMeta[count($batch)] = ['code' => $parentKey, 'pid' => $parentId, 'hash' => $groupHash];
             $batch[] = $parentRow; // hlavny produkt musi byt v davke pred variantmi
+
+            if (!$dry && !$parentIsNew) {
+                // upsert konfiguratora stare farby neodstrani, preto sa zmazu nastavenia farieb, ktore uz nie su skladom
+                $keepIds = array_map(
+                    fn (string $color): string => md5('brunko:po:' . self::VARIANT_PARAM . ':' . mb_strtolower(PropertyMap::normalizeValue(self::VARIANT_PARAM, $color))),
+                    array_values($settingColors)
+                );
+                $this->db->executeStatement(
+                    'DELETE FROM product_configurator_setting WHERE product_id = UNHEX(?) AND property_group_option_id NOT IN (' . implode(',', array_fill(0, count($keepIds), 'UNHEX(?)')) . ')',
+                    array_merge([$parentId], $keepIds)
+                );
+            }
 
             foreach ($members as $c => $m) {
                 $isNew = !isset($state[$c]);
@@ -401,7 +445,7 @@ class ImportAutronicCommand extends Command
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
         if ($hasColor) {
-            $p['_map'] = 2; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
+            $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
 
         return $p;
@@ -413,6 +457,7 @@ class ImportAutronicCommand extends Command
      */
     private function optionRow(string $param, string $value, string $systemLang, string $skLang): array
     {
+        $value = PropertyMap::normalizeValue($param, $value);
         $label = PropertyMap::groupLabel($param);
         $group = [
             'id' => md5('brunko:pg:' . $param),

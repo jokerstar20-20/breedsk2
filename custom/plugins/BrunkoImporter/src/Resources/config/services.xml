@@ -14,6 +14,11 @@
             <argument type="service" id="category.repository"/>
         </service>
 
+        <service id="Brunko\Importer\Subscriber\SoldOutVariantRedirectSubscriber">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
         <service id="Brunko\Importer\Command\ImportAutronicCommand">
             <argument type="service" id="Brunko\Importer\Feed\AutronicFeedReader"/>
             <argument type="service" id="Brunko\Importer\Feed\FeedDownloader"/>
