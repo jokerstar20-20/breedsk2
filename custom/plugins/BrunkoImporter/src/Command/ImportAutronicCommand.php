@@ -37,6 +37,9 @@ class ImportAutronicCommand extends Command
     /** ID vyrobcu Autronic (nastavuje sa v doImport). */
     private string $manufacturerId = '';
 
+    /** @var array<string,string>|null ID hodnoty vlastnosti => ID obrazka (farby bez hex kodu, napr. "Viacfarebna", s obrazkom nastavenym v admine) */
+    private ?array $optionMedia = null;
+
     public function __construct(
         private readonly AutronicFeedReader $reader,
         private readonly FeedDownloader $feeds,
@@ -96,8 +99,7 @@ class ImportAutronicCommand extends Command
                 continue;
             }
             if ($p['name'] === '') {
-                $p['name'] = self::MANUFACTURER . ' ' . $p['code'];
-                $named++;
+                $named++; // nazov sa zostavi pri zapise: "Autronic + kod"
             }
             foreach (self::SKIP_PREFIXES as $prefix) {
                 if (str_starts_with($p['cat_code'], $prefix)) {
@@ -296,7 +298,14 @@ class ImportAutronicCommand extends Command
             foreach ($members as $c => $m) {
                 $memberHashes[$c] = md5(json_encode($this->hashBase($m), JSON_UNESCAPED_UNICODE) . $parentId . ':settings2');
             }
-            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors], JSON_UNESCAPED_UNICODE));
+            $mediaMarks = [];
+            foreach ($settingColors as $color) {
+                $oid = md5('brunko:po:' . self::VARIANT_PARAM . ':' . mb_strtolower(PropertyMap::normalizeValue(self::VARIANT_PARAM, $color)));
+                if (isset($this->optionMedia()[$oid])) {
+                    $mediaMarks[$oid] = $this->optionMedia()[$oid];
+                }
+            }
+            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $mediaMarks, 'nm2'], JSON_UNESCAPED_UNICODE));
             $parentIsNew = !isset($state[$parentKey]);
             $allSame = !$parentIsNew && $state[$parentKey]['hash'] === $groupHash;
             foreach ($codes as $c) {
@@ -380,7 +389,7 @@ class ImportAutronicCommand extends Command
         $price = $this->priceStruct($p);
 
         $id = md5('brunko:product:' . self::SUPPLIER . ':' . $p['code']);
-        $name = $p['name'];
+        $name = $this->displayName($p['name'], $p['code']);
         $desc = $p['desc_html'] ?? ($p['desc_text'] !== null ? nl2br(htmlspecialchars($p['desc_text'])) : null);
         $tr = ['name' => $name, 'description' => $desc];
 
@@ -462,7 +471,7 @@ class ImportAutronicCommand extends Command
     {
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
-        $p['_mf'] = 1; // vyrobca Autronic => jednorazovo prepise existujuce produkty
+        $p['_mf'] = 2; // (2 = tvar nazvu "Autronic KOD nazov")   // vyrobca Autronic => jednorazovo prepise existujuce produkty
         if ($hasColor) {
             $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
@@ -670,12 +679,18 @@ class ImportAutronicCommand extends Command
         $mainVariantId = md5('brunko:product:' . self::SUPPLIER . ':' . array_key_first($ranked));
 
         $desc = $first['desc_html'] ?? ($first['desc_text'] !== null ? nl2br(htmlspecialchars($first['desc_text'])) : null);
-        $tr = ['name' => $parentName, 'description' => $desc];
+        $tr = ['name' => $this->displayName($parentName, $parentNumber), 'description' => $desc];
 
         $settings = [];
         foreach ($colors as $color) {
             $opt = $this->optionRow(self::VARIANT_PARAM, $color, $systemLang, $skLang);
-            $settings[] = ['id' => md5('brunko:cs:' . $parentId . ':' . $opt['id']), 'option' => $opt];
+            $setting = ['id' => md5('brunko:cs:' . $parentId . ':' . $opt['id']), 'option' => $opt];
+            // Farba bez hex kodu, ale s obrazkom (napr. "Viacfarebna"): obrazok sa zobrazi v kruzku namiesto textu
+            $mediaId = $this->optionMedia()[$opt['id']] ?? null;
+            if ($mediaId !== null && empty($opt['colorHexCode'])) {
+                $setting['mediaId'] = $mediaId;
+            }
+            $settings[] = $setting;
         }
 
         $row = [
@@ -717,6 +732,33 @@ class ImportAutronicCommand extends Command
         }
 
         return $row;
+    }
+
+    /**
+     * Nazov v e-shope: "Autronic KOD Typ, material". Feed uvadza kod na konci nazvu ("Zrkadlo, zrkadlo, AZR-V5015"),
+     * ten sa z nazvu vyhodi (je uz na zaciatku). Bez nazvu vo feede ostane len "Autronic KOD".
+     */
+    private function displayName(string $name, string $code): string
+    {
+        $parts = array_filter(
+            array_map('trim', explode(',', $name)),
+            fn (string $part): bool => $part !== '' && mb_strtolower($part) !== mb_strtolower($code)
+        );
+
+        return trim(self::MANUFACTURER . ' ' . $code . ' ' . implode(', ', $parts));
+    }
+
+    /** @return array<string,string> */
+    private function optionMedia(): array
+    {
+        if ($this->optionMedia === null) {
+            $this->optionMedia = [];
+            foreach ($this->db->fetchAllAssociative('SELECT LOWER(HEX(id)) AS id, LOWER(HEX(media_id)) AS media_id FROM property_group_option WHERE media_id IS NOT NULL') as $r) {
+                $this->optionMedia[$r['id']] = $r['media_id'];
+            }
+        }
+
+        return $this->optionMedia;
     }
 
     /** Vyrobca Autronic: pouzije sa existujuci (podla nazvu), inak sa vytvori. */
