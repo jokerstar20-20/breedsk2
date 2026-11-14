@@ -1,0 +1,14 @@
+{
+    "name": "brunko/importer",
+    "description": "Brunko XML importer dodavatelov",
+    "type": "shopware-platform-plugin",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "authors": [{ "name": "Brunko" }],
+    "require": { "shopware/core": "~6.7.0" },
+    "autoload": { "psr-4": { "Brunko\\Importer\\": "src/" } },
+    "extra": {
+        "shopware-plugin-class": "Brunko\\Importer\\BrunkoImporter",
+        "label": { "de-DE": "Brunko Importer", "en-GB": "Brunko Importer" }
+    }
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="Brunko\Importer\Feed\AutronicFeedReader"/>
+
+        <service id="Brunko\Importer\Feed\FeedDownloader">
+            <argument>%kernel.project_dir%</argument>
+        </service>
+
+        <service id="Brunko\Importer\Service\CategoryResolver">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="category.repository"/>
+        </service>
+
+        <service id="Brunko\Importer\Command\ImportAutronicCommand">
+            <argument type="service" id="Brunko\Importer\Feed\AutronicFeedReader"/>
+            <argument type="service" id="Brunko\Importer\Feed\FeedDownloader"/>
+            <argument type="service" id="Brunko\Importer\Service\CategoryResolver"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="tax.repository"/>
+            <argument type="service" id="logger"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Brunko\Importer\Command\ImportImagesCommand">
+            <argument type="service" id="Brunko\Importer\Feed\AutronicFeedReader"/>
+            <argument type="service" id="Brunko\Importer\Feed\FeedDownloader"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="media.repository"/>
+            <argument type="service" id="Shopware\Core\Content\Media\File\FileFetcher"/>
+            <argument type="service" id="Shopware\Core\Content\Media\File\FileSaver"/>
+            <argument type="service" id="logger"/>
+            <tag name="console.command"/>
+        </service>
+    </services>
+</container>
