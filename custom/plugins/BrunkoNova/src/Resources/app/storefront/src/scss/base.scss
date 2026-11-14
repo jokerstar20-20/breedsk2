@@ -101,7 +101,7 @@
             line-clamp: 1 !important;
             overflow: hidden;
             white-space: normal !important;
-            font-size: .875rem !important;
+            font-size: 15px !important;
             font-weight: 700 !important;
             line-height: 1.3 !important;
             height: auto !important;
@@ -118,7 +118,7 @@
             line-clamp: 6;
             overflow: hidden;
             padding-top: .35rem;
-            font-size: .8rem;
+            font-size: 12px !important;
             line-height: 1.4;
             min-height: calc(6 * 1.4em + .35rem) !important; // vždy 6 riadkov miesta, aby boli ceny v rade rovno
             color: #6c757d;
