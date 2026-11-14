@@ -2,7 +2,9 @@
     "brunko": {
         "listing": {
             "available": "Skladom",
-            "unavailable": "Nedostupné"
+            "unavailable": "Nedostupné",
+            "promoBadge": "Akcia",
+            "addToCart": "Do košíka"
         }
     }
 }

@@ -109,13 +109,13 @@
         .brunko-product-description {
             display: -webkit-box;
             -webkit-box-orient: vertical;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
+            -webkit-line-clamp: 6;
+            line-clamp: 6;
             overflow: hidden;
             padding-top: .35rem;
             font-size: .8rem;
             line-height: 1.4;
-            min-height: calc(3 * 1.4em + .35rem);
+            min-height: calc(6 * 1.4em + .35rem) !important; // vždy 6 riadkov miesta, aby boli ceny v rade rovno
             color: #6c757d;
         }
 
@@ -123,18 +123,54 @@
             padding-top: .5rem;
         }
 
+        // Riadok s farebnými variantmi má vždy rovnakú výšku. Karty bez variantov majú namiesto neho prázdny riadok
+        // (.product-variant-characteristics), vďaka tomu sú odznaky s cenou a košík vo všetkých kartách v rade rovno.
+        .product-detail-configurator,
+        .product-variant-characteristics {
+            display: flex;
+            align-items: center;
+            // !important: RHWebFoundation resetuje height/min-height na všetkom v .product-info (vyššia špecifickosť)
+            height: 1.5rem !important;
+            min-height: 1.5rem !important;
+            overflow: visible;
+        }
+
+        .product-detail-configurator .product-detail-configurator-group {
+            width: 100%;
+        }
+
+        // Farba bez hex kódu sa zobrazí ako text, nesmie sa orezať v kolieska
+        .product-detail-configurator-option-label.is-display-color:not([style*="background-color"]) {
+            width: auto;
+            min-width: 1.25rem;
+            padding-inline: .5rem;
+            border-radius: 1rem;
+            white-space: nowrap;
+        }
+
         // Pôvodná bodka / delivery time z RHWebFoundation je nahradená vlastnou dostupnosťou
         .rhweb-product-delivery-information {
             display: none;
         }
 
-        .brunko-availability {
+        // cena (alebo akciový rámček) vľavo, dostupnosť vedľa nej na rovnakej úrovni
+        .brunko-price-line {
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+            width: 100%;
+        }
+
+        .brunko-availability {
+            display: flex;
+            flex: 1 1 auto;
+            align-items: center;
+            justify-content: center;
             gap: .4rem;
-            padding-top: .5rem;
-            font-size: .8rem;
-            line-height: 1;
+            font-size: .95rem;
+            font-weight: 700;
+            line-height: 1.1;
 
             .brunko-availability-dot {
                 flex: 0 0 auto;
@@ -157,10 +193,85 @@
             }
         }
 
-        // tlačidlo "Pridať do košíka" a množstvo prilepené dole
+        // tlačidlo "Do košíka" a množstvo prilepené dole
         .product-action {
             margin-top: auto;
             padding-top: 1rem;
+        }
+    }
+
+    // Košík a množstvo sú vždy viditeľné (RHWebFoundation ich zobrazuje len pri hover)
+    body.rhweb-foundation & .product-info .product-action {
+        opacity: 1;
+    }
+
+    // Odznak zľavy v rohu: "Akcia -27%" (väčší, dobre viditeľný)
+    body & .product-badges .badge.badge-discount {
+        --bs-badge-font-size: 1.05rem;
+        --bs-badge-padding-y: .22rem;
+        --bs-badge-padding-x: .5rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        line-height: 1.1;
+        padding: .22rem .5rem;
+        white-space: nowrap;
+    }
+
+    // Akciový rámček ceny (ako na Alze): štítok s názvom akcie + farebný box s cenou
+    .brunko-promo {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+
+        .brunko-promo-label {
+            align-self: flex-start;
+            padding: .15rem .45rem;
+            border-radius: 3px 3px 0 0;
+            background-color: #ffd60a;
+            color: #1b1b1b;
+            font-size: .7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+        }
+
+        .brunko-promo-box {
+            display: block;
+            flex: 0 0 auto;
+            padding: .4rem .7rem .45rem;
+            border-radius: 0 4px 4px 4px;
+            color: #fff;
+        }
+
+        .product-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+
+        .list-price {
+            color: rgba(255, 255, 255, .85);
+            font-size: .8rem;
+            font-weight: 400;
+            text-decoration: line-through;
+        }
+
+        .list-price-price {
+            text-decoration: line-through;
+        }
+
+        &.brunko-promo-blackfriday .brunko-promo-box {
+            background-color: #1f2329;
+        }
+
+        &.brunko-promo-flyer .brunko-promo-box {
+            background-color: #e30613;
         }
     }
 }

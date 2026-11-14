@@ -1,0 +1,6 @@
+{% sw_extends '@Storefront/storefront/component/product/card/action.html.twig' %}
+
+{# Krátky text tlačidla v karte: "Do košíka". Vlastný snippet brunko.listing.addToCart (neprebije ho preklad zo Storefrontu). #}
+{% block page_product_detail_product_buy_button_label %}
+    {{ 'brunko.listing.addToCart'|trans|sw_sanitize }}
+{% endblock %}

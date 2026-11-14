@@ -1,10 +1,11 @@
 {
-    "child-theme": {
-    },
+    "child-theme": {},
     "brunko": {
         "listing": {
             "available": "In stock",
-            "unavailable": "Unavailable"
+            "unavailable": "Unavailable",
+            "promoBadge": "Sale",
+            "addToCart": "Add to cart"
         }
     }
 }

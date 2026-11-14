@@ -1,0 +1,25 @@
+{% sw_extends '@Storefront/storefront/component/product/card/badges.html.twig' %}
+
+{# Odznak v rohu: "Akcia -27%" (vypočítané zo zľavy), namiesto holého "%". #}
+{% block component_product_badges_discount %}
+    {% set price = product.calculatedPrice %}
+    {% if product.calculatedPrices.count > 0 %}
+        {% set price = product.calculatedPrices.last %}
+    {% endif %}
+
+    {# A regulation price replaces the list price as the reference for the saving. #}
+    {% set brunkoPercentage = (price.regulationPrice ?? price.listPrice).percentage %}
+    {% set hasDiscount = brunkoPercentage > 0 %}
+    {% set hasRange = product.calculatedPrices.count > 1 %}
+
+    {% set displayParent = product.variantListingConfig.displayParent and product.parentId === null %}
+    {% if displayParent %}
+        {% set displayFromVariants = displayParent and price.unitPrice !== product.calculatedCheapestPrice.unitPrice %}
+    {% endif %}
+
+    {% if hasDiscount and not hasRange and not displayFromVariants %}
+        <span class="badge bg-danger badge-discount">
+            {{ 'brunko.listing.promoBadge'|trans|sw_sanitize }} -{{ brunkoPercentage|round }}%
+        </span>
+    {% endif %}
+{% endblock %}

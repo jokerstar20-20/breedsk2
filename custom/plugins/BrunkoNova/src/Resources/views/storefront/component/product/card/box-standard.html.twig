@@ -5,25 +5,10 @@
 {% block component_product_box_name %}
     {{ parent() }}
 
-    {% set brunkoDescription = (product.translated.description ?? '')|striptags|trim|slice(0, 300) %}
+    {% set brunkoDescription = (product.translated.description ?? '')|striptags|trim|slice(0, 600) %}
     {% if brunkoDescription is not empty %}
         <p class="brunko-product-description">{{ brunkoDescription|sw_sanitize }}</p>
     {% endif %}
 {% endblock %}
 
-{# Dostupnosť: zelená bodka + "Skladom" / červená bodka + "Nedostupné". #}
-{% block component_product_box_action %}
-    {% set brunkoInStock = product.available and product.availableStock >= product.minPurchase %}
-    <div class="brunko-availability {{ brunkoInStock ? 'is-available' : 'is-unavailable' }}">
-        <span class="brunko-availability-dot" aria-hidden="true"></span>
-        <span class="brunko-availability-text">
-            {% if brunkoInStock %}
-                {{ 'brunko.listing.available'|trans|sw_sanitize }}
-            {% else %}
-                {{ 'brunko.listing.unavailable'|trans|sw_sanitize }}
-            {% endif %}
-        </span>
-    </div>
-
-    {{ parent() }}
-{% endblock %}
+{# Dostupnosť sa vykresľuje vedľa ceny v price-unit.html.twig (blok component_product_box_main_price). #}

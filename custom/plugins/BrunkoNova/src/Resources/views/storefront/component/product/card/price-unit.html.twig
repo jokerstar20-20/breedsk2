@@ -1,7 +1,58 @@
 {% sw_extends '@Storefront/storefront/component/product/card/price-unit.html.twig' %}
 
-{# Hlavná cena: bez textu "(10% uložených)" pri cene, zľava je v odznaku v rohu karty. #}
+{#
+    Hlavná cena. Pri zlavnenom produkte (pôvodná cena) sa cena zobrazí v rámčeku ako na Alze:
+    "BLACK FRIDAY -27%" (november) alebo "LETÁKOVÁ AKCIA" (po zvyšok roka).
+    Zapínanie/vypínanie: Admin > Rozšírenia > Moje rozšírenia > BrunkoNova > Konfigurovať.
+    Text "(X% uložených)" pri cene sa nezobrazuje.
+#}
 {% block component_product_box_main_price %}
+    {% set brunkoPromoMode = config('BrunkoNova.config.brunkoPromoMode') ?: 'auto' %}
+    {% if brunkoPromoMode == 'auto' %}
+        {% set brunkoPromoMode = ('now'|date('n')) == 11 ? 'blackfriday' : 'flyer' %}
+    {% endif %}
+    {% set brunkoShowPromo = isListPrice and not displayFrom and not displayFromVariants and brunkoPromoMode != 'off' %}
+
+    {% if brunkoShowPromo %}
+        {% if brunkoPromoMode == 'blackfriday' %}
+            {% set brunkoPromoLabel = (config('BrunkoNova.config.brunkoPromoBlackFridayLabel') ?: 'Black Friday') ~ ' -' ~ price.listPrice.percentage|round ~ '%' %}
+        {% else %}
+            {% set brunkoPromoLabel = config('BrunkoNova.config.brunkoPromoFlyerLabel') ?: 'Letáková akcia' %}
+        {% endif %}
+
+        <span class="brunko-promo brunko-promo-{{ brunkoPromoMode }}">
+            <span class="brunko-promo-label">{{ brunkoPromoLabel }}</span>
+            <span class="brunko-price-line">
+                <span class="brunko-promo-box">
+                    {{ block('brunko_product_box_main_price_inner') }}
+                </span>
+                {{ block('brunko_product_box_availability') }}
+            </span>
+        </span>
+    {% else %}
+        <span class="brunko-price-line">
+            {{ block('brunko_product_box_main_price_inner') }}
+            {{ block('brunko_product_box_availability') }}
+        </span>
+    {% endif %}
+{% endblock %}
+
+{# Dostupnosť vedľa ceny: zelená bodka + "Skladom" / červená bodka + "Nedostupné". #}
+{% block brunko_product_box_availability %}
+    {% set brunkoInStock = product.available and product.availableStock >= product.minPurchase %}
+    <span class="brunko-availability {{ brunkoInStock ? 'is-available' : 'is-unavailable' }}">
+        <span class="brunko-availability-dot" aria-hidden="true"></span>
+        <span class="brunko-availability-text">
+            {% if brunkoInStock %}
+                {{ 'brunko.listing.available'|trans|sw_sanitize }}
+            {% else %}
+                {{ 'brunko.listing.unavailable'|trans|sw_sanitize }}
+            {% endif %}
+        </span>
+    </span>
+{% endblock %}
+
+{% block brunko_product_box_main_price_inner %}
     <span class="product-price{% if displaySalePrice %} with-list-price{% endif %}">
         {{ price.unitPrice|currency }}
 

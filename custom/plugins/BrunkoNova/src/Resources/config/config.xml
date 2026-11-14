@@ -3,8 +3,62 @@
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/master/src/Core/System/SystemConfig/Schema/config.xsd">
 
     <card>
-        <title>Custom Settings</title>
-        <title lang="de-DE">Eigene Einstellungen</title>
+        <title>Product listing promotions</title>
+        <title lang="sk-SK">Akcie v zozname produktov</title>
+        <title lang="de-DE">Aktionen in der Produktliste</title>
+
+        <input-field type="single-select">
+            <name>brunkoPromoMode</name>
+            <label>Promotion on discounted products</label>
+            <label lang="sk-SK">Akcia pri zlavnených produktoch</label>
+            <label lang="de-DE">Aktion bei reduzierten Produkten</label>
+            <helpText>Automatic: Black Friday in November, Flyer promotion for the rest of the year.</helpText>
+            <helpText lang="sk-SK">Automaticky: v novembri Black Friday, po zvyšok roka Letáková akcia. Rámček sa zobrazí len pri produktoch so zľavou (pôvodná cena).</helpText>
+            <helpText lang="de-DE">Automatisch: im November Black Friday, im restlichen Jahr Flyer-Aktion.</helpText>
+            <defaultValue>auto</defaultValue>
+            <options>
+                <option>
+                    <id>auto</id>
+                    <name>Automatic (November = Black Friday, otherwise Flyer promotion)</name>
+                    <name lang="sk-SK">Automaticky (november = Black Friday, inak Letáková akcia)</name>
+                    <name lang="de-DE">Automatisch (November = Black Friday, sonst Flyer-Aktion)</name>
+                </option>
+                <option>
+                    <id>blackfriday</id>
+                    <name>Black Friday</name>
+                    <name lang="sk-SK">Black Friday</name>
+                    <name lang="de-DE">Black Friday</name>
+                </option>
+                <option>
+                    <id>flyer</id>
+                    <name>Flyer promotion</name>
+                    <name lang="sk-SK">Letáková akcia</name>
+                    <name lang="de-DE">Flyer-Aktion</name>
+                </option>
+                <option>
+                    <id>off</id>
+                    <name>Off</name>
+                    <name lang="sk-SK">Vypnuté</name>
+                    <name lang="de-DE">Aus</name>
+                </option>
+            </options>
+        </input-field>
+
+        <input-field type="text">
+            <name>brunkoPromoBlackFridayLabel</name>
+            <label>Black Friday label</label>
+            <label lang="sk-SK">Názov akcie Black Friday</label>
+            <label lang="de-DE">Name der Black-Friday-Aktion</label>
+            <defaultValue>Black Friday</defaultValue>
+        </input-field>
+
+        <input-field type="text">
+            <name>brunkoPromoFlyerLabel</name>
+            <label>Flyer promotion label</label>
+            <label lang="sk-SK">Názov letákovej akcie</label>
+            <label lang="de-DE">Name der Flyer-Aktion</label>
+            <defaultValue>Letáková akcia</defaultValue>
+        </input-field>
     </card>
 
 </config>
