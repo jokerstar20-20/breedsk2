@@ -1,4 +1,10 @@
 {
     "child-theme": {
+    },
+    "brunko": {
+        "listing": {
+            "available": "In stock",
+            "unavailable": "Unavailable"
+        }
     }
 }

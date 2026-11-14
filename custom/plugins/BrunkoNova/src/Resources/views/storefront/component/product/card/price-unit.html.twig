@@ -1,0 +1,31 @@
+{% sw_extends '@Storefront/storefront/component/product/card/price-unit.html.twig' %}
+
+{# Hlavná cena: bez textu "(10% uložených)" pri cene, zľava je v odznaku v rohu karty. #}
+{% block component_product_box_main_price %}
+    <span class="product-price{% if displaySalePrice %} with-list-price{% endif %}">
+        {{ price.unitPrice|currency }}
+
+        {% if isListPrice and not displayFrom and not displayFromVariants %}
+            <span class="list-price">
+                {% block component_product_box_main_price_before %}
+                    {% sw_include '@Storefront/storefront/component/product/list-price-affix.html.twig' with {
+                        position: 'before'
+                    } %}
+                {% endblock %}
+
+                <span class="visually-hidden list-price-label">{{ 'listing.regularPriceLabel'|trans|sw_sanitize }}</span>
+
+                <span class="list-price-price">{{ price.listPrice.price|currency }}</span>
+
+                {% block component_product_box_main_price_after %}
+                    {% sw_include '@Storefront/storefront/component/product/list-price-affix.html.twig' with {
+                        position: 'after'
+                    } %}
+                {% endblock %}
+            </span>
+        {% endif %}
+    </span>
+{% endblock %}
+
+{# V karte v listingu sa riadok "Ceny vrátane DPH plus náklady na dopravu" nezobrazuje. #}
+{% block component_product_box_price_tax_info %}{% endblock %}
