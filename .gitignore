@@ -28,3 +28,6 @@
 # pluginy z obchodu/tretích strán sa do Gitu neukladajú, len naše (Brunko*)
 /custom/plugins/*
 !/custom/plugins/Brunko*
+
+# skompilované súbory tém
+/custom/plugins/Brunko*/src/Resources/app/storefront/dist/
