@@ -1,8 +1,0 @@
-{
-    "brunko": {
-        "filter": {
-            "searchLabel": "Hľadať v: %displayName%",
-            "searchPlaceholder": "Hľadať…"
-        }
-    }
-}

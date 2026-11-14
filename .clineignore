@@ -1,15 +1,34 @@
+# tajomstvá
 .env
-.env.local
 .env.*
 config/jwt/
 config/secrets/
+auth.json
 *.pem
 *.key
+*.sql
+*.sql.gz
+*.tar.gz
 
-# Systémové zložky, ktoré AI nepotrebuje vidieť (šetrí to tokeny a zrýchľuje odozvu)
-vendor/
+# veľké a generované zložky
+var/
 node_modules/
-var/cache/
-var/log/
-public/media/
-public/thumbnail/
+public/
+files/
+custom/apps/
+
+# pluginy tretích strán (Novu nechávame čitateľnú pre child tému)
+custom/plugins/RHWebFoundation/
+custom/plugins/Swag*/
+custom/plugins/Sendcloud*/
+custom/plugins/RmaWithdrawal/
+
+# vendor: len šablóny Storefrontu na referenciu
+vendor/*
+!vendor/shopware/
+vendor/shopware/*
+!vendor/shopware/storefront/
+vendor/shopware/storefront/*
+!vendor/shopware/storefront/Resources/
+vendor/shopware/storefront/Resources/*
+!vendor/shopware/storefront/Resources/views/

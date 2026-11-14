@@ -1,8 +1,0 @@
-{
-    "brunko": {
-        "filter": {
-            "searchLabel": "Search in %displayName%",
-            "searchPlaceholder": "Search…"
-        }
-    }
-}

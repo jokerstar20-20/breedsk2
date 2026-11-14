@@ -23,11 +23,8 @@
 /.env.*
 !/.env.dist
 /config/jwt/*.pem
+/.claude/settings.local.json
 
 # pluginy z obchodu/tretích strán sa do Gitu neukladajú, len naše (Brunko*)
 /custom/plugins/*
 !/custom/plugins/Brunko*
-/.env
-/.env.*
-!/.env.dist
-/config/jwt/*.pem

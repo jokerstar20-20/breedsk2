@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./config/jwt/**)",
+      "Read(./auth.json)",
+      "Read(~/.ssh/**)",
+      "Read(~/backup/**)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Bash(cat .env*)",
+      "Bash(printenv:*)",
+      "Bash(env)"
+    ]
+  }
+}
