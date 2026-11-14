@@ -1,0 +1,271 @@
+@import 'fonts';
+
+/*
+======================================
+        General
+======================================
+*/
+
+h1,
+h2,
+h3,
+.h1,
+.h2,
+.h3 {
+    font-family: 'Roboto Mono', sans-serif;
+}
+
+/*
+======================================
+        Header
+======================================
+*/
+
+.header-main {
+    background-color: $mrpix-gastrostockholm-header-background;
+
+    .header-actions-col {
+        .icon {
+            color: $mrpix-gastrostockholm-header-content;
+        }
+
+        .header-actions-btn:hover .icon {
+            color: $mrpix-gastrostockholm-header-content-hover;
+        }
+    }
+
+    .header-cart {
+        .header-cart-total {
+            color: $mrpix-gastrostockholm-header-content;
+        }
+    }
+}
+
+/*
+======================================
+        Navigation
+======================================
+*/
+
+.nav-main {
+    background-color: $mrpix-gastrostockholm-navigation-background;
+}
+
+.main-navigation-menu {
+    .main-navigation-link {
+        color: $mrpix-gastrostockholm-navigation-content;
+
+        &.active {
+            .main-navigation-link-text {
+                color: $mrpix-gastrostockholm-navigation-content-active;
+                border-color: $mrpix-gastrostockholm-navigation-line;
+            }
+        }
+
+        &:hover {
+            color: $mrpix-gastrostockholm-navigation-content-hover;
+        }
+    }
+}
+
+/*
+======================================
+        Sonstiges
+======================================
+*/
+
+.cms-section-default {
+    .header-image-1 {
+        background-size: 100%;
+        background-position: bottom;
+        background-repeat: no-repeat;
+        margin-bottom: 80px;
+
+        @media (min-width: 1200px) {
+            height: 450px;
+        }
+
+        .cms-element-text {
+            @media (min-width: 1200px) {
+                padding-left: 180px;
+                padding-top: 100px;
+            }
+
+            .description {
+                margin-bottom: 25px;
+                margin-top: -5px;
+            }
+
+            .btn-primary {
+                background: transparent;
+                border-color: #ffffff;
+                font-size: 15px;
+                font-weight: normal;
+                padding: 5px;
+                width: 170px;
+            }
+        }
+    }
+
+    .cms-block-text-teaser {
+        font-size: 30px;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+    }
+
+    .teaser-order-food {
+        margin-bottom: 80px;
+
+        .cms-element-text {
+            font-size: 25px;
+        }
+    }
+
+    .bestseller-headline {
+        background: $mrpix-gastrostockholm-bestseller-background;
+        font-size: 30px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+
+        @media (max-width: 576px) {
+            padding-top: 30px;
+            margin: auto;
+            width: 50%;
+        }
+
+        @media (min-width: 1200px) {
+            padding-top: 40px;
+            padding-left: 235px;
+        }
+    }
+
+    .bestseller-block {
+        background: $mrpix-gastrostockholm-bestseller-background;
+
+        @media (max-width: 576px) {
+            margin: auto;
+            width: 65%;
+        }
+
+        @media (min-width: 1200px) {
+            padding-left: 215px;
+            padding-right: 120px;
+        }
+
+        .product-box {
+            border-color: transparent;
+            background-color: $mrpix-gastrostockholm-bestseller-background;
+            width: 70%;
+
+            @media (max-width: 991px) {
+                margin: auto;
+                width: 100%;
+            }
+
+            .product-image-wrapper {
+                min-width: 290px;
+            }
+
+            .product-info .product-name {
+                margin-bottom: -15px;
+            }
+
+            .product-info .product-rating {
+                display: none;
+            }
+
+            .product-info .product-variant-characteristics {
+                display: none;
+            }
+
+            .product-info .product-description {
+                margin-top: 0;
+                margin-bottom: 10px;
+            }
+
+            .product-info .product-price-info {
+                margin-top: -60px;
+            }
+
+            .product-action .btn-buy {
+                color: $mrpix-gastrostockholm-bestseller-button-color;
+                background-color: $mrpix-gastrostockholm-bestseller-button-background;
+                border-color: $mrpix-gastrostockholm-bestseller-button-color;
+            }
+        }
+    }
+
+    .headline-instructions {
+        text-transform: uppercase;
+        margin-top: 80px;
+    }
+
+    .block-instructions {
+        .image-text-gallery-card {
+            box-shadow: none;
+        }
+
+        .cms-image-container {
+            @media (min-width: 1200px) {
+                padding-left: 90px;
+                padding-right: 120px;
+            }
+
+            @media (max-width: 991px) {
+                margin: auto;
+                width: 30%;
+            }
+
+            .cms-image {
+                min-width: 75%;
+            }
+        }
+    }
+}
+
+/* Product Name */
+.product-name,
+.product-detail-name {
+    font-family: 'Roboto Mono', sans-serif;
+}
+
+/*
+======================================
+        Footer
+======================================
+*/
+
+.footer-main {
+    background-color: $mrpix-gastrostockholm-footer-background;
+
+    .container {
+        max-width: 1200px;
+    }
+
+    .footer-column-headline {
+        color: $mrpix-gastrostockholm-footer-headline;
+        font-family: 'Roboto Mono', sans-serif;
+
+        [href] {
+            color: $mrpix-gastrostockholm-footer-headline;
+        }
+    }
+
+    .footer-column-content-inner,
+    .footer-contact-form {
+        color: $mrpix-gastrostockholm-footer-content;
+
+        [href] {
+            color: $mrpix-gastrostockholm-footer-content-link;
+
+            &:hover {
+                color: $mrpix-gastrostockholm-footer-content-hover;
+            }
+        }
+    }
+}
+
+.footer-logo.is-payment {
+    /* Display payment icons in one line */
+    display: inline-block;
+}

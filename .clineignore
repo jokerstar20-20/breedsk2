@@ -1,0 +1,15 @@
+.env
+.env.local
+.env.*
+config/jwt/
+config/secrets/
+*.pem
+*.key
+
+# Systémové zložky, ktoré AI nepotrebuje vidieť (šetrí to tokeny a zrýchľuje odozvu)
+vendor/
+node_modules/
+var/cache/
+var/log/
+public/media/
+public/thumbnail/

@@ -1,0 +1,205 @@
+{
+    "name": "MrpixGastroStockholm",
+    "author": "mr. pixel KG",
+    "views": ["@Storefront", "@Plugins", "@MrpixGastroStockholm"],
+    "style": [
+        "@Storefront",
+        "app/storefront/src/scss/overrides.scss",
+        "app/storefront/src/scss/base.scss"
+    ],
+    "script": ["@Storefront"],
+    "previewMedia": "app/storefront/src/assets/StockholmThumbnail.jpg",
+    "config": {
+        "blocks": {
+            "footer": {
+                "label": {
+                    "en-GB": "Footer",
+                    "de-DE": "Footer"
+                }
+            },
+            "header": {
+                "label": {
+                    "en-GB": "Header",
+                    "de-DE": "Header"
+                }
+            },
+            "navigation": {
+                "label": {
+                    "en-GB": "Navigation",
+                    "de-DE": "Navigation"
+                }
+            },
+            "bestseller": {
+                "label": {
+                    "en-GB": "Bestseller",
+                    "de-DE": "Bestseller"
+                }
+            }
+        },
+        "fields": {
+            "sw-color-brand-primary": {
+                "value": "#ffba00"
+            },
+            "mrpix-gastrostockholm-header-background": {
+                "label": {
+                    "en-GB": "Background color",
+                    "de-DE": "Hintergrund Farbe"
+                },
+                "type": "color",
+                "value": "#ffffff",
+                "editable": true,
+                "block": "header"
+            },
+            "mrpix-gastrostockholm-header-content": {
+                "label": {
+                    "en-GB": "Color",
+                    "de-DE": "Farbe"
+                },
+                "type": "color",
+                "value": "#0e5471",
+                "editable": true,
+                "block": "header"
+            },
+            "mrpix-gastrostockholm-header-content-hover": {
+                "label": {
+                    "en-GB": "Hover color",
+                    "de-DE": "Hover Farbe"
+                },
+                "type": "color",
+                "value": "#73a1b5",
+                "editable": true,
+                "block": "header"
+            },
+            "mrpix-gastrostockholm-navigation-content": {
+                "label": {
+                    "en-GB": "Color",
+                    "de-DE": "Farbe"
+                },
+                "type": "color",
+                "value": "#000000",
+                "editable": true,
+                "block": "navigation"
+            },
+            "mrpix-gastrostockholm-navigation-content-hover": {
+                "label": {
+                    "en-GB": "Hover color",
+                    "de-DE": "Hover Farbe"
+                },
+                "type": "color",
+                "value": "#3d3d3d",
+                "editable": true,
+                "block": "navigation"
+            },
+            "mrpix-gastrostockholm-navigation-content-active": {
+                "label": {
+                    "en-GB": "Active color",
+                    "de-DE": "Aktive Farbe"
+                },
+                "type": "color",
+                "value": "#000000",
+                "editable": true,
+                "block": "navigation"
+            },
+            "mrpix-gastrostockholm-navigation-background": {
+                "label": {
+                    "en-GB": "Background color",
+                    "de-DE": "Hintergrund Farbe"
+                },
+                "type": "color",
+                "value": "#ffffff",
+                "editable": true,
+                "block": "navigation"
+            },
+            "mrpix-gastrostockholm-navigation-line": {
+                "label": {
+                    "en-GB": "Line color",
+                    "de-DE": "Linien Farbe"
+                },
+                "type": "color",
+                "value": "#dc743c",
+                "editable": true,
+                "block": "navigation"
+            },
+            "mrpix-gastrostockholm-footer-background": {
+                "label": {
+                    "en-GB": "Background color",
+                    "de-DE": "Hintergrund Farbe"
+                },
+                "type": "color",
+                "value": "#d7dbde",
+                "editable": true,
+                "block": "footer"
+            },
+            "mrpix-gastrostockholm-footer-headline": {
+                "label": {
+                    "en-GB": "Headline color",
+                    "de-DE": "Überschrift Farbe"
+                },
+                "type": "color",
+                "value": "#000000",
+                "editable": true,
+                "block": "footer"
+            },
+            "mrpix-gastrostockholm-footer-content": {
+                "label": {
+                    "en-GB": "Text color",
+                    "de-DE": "Text Farbe"
+                },
+                "type": "color",
+                "value": "#000000",
+                "editable": true,
+                "block": "footer"
+            },
+            "mrpix-gastrostockholm-footer-content-link": {
+                "label": {
+                    "en-GB": "Link color",
+                    "de-DE": "Link Farbe"
+                },
+                "type": "color",
+                "value": "#000000",
+                "editable": true,
+                "block": "footer"
+            },
+            "mrpix-gastrostockholm-footer-content-hover": {
+                "label": {
+                    "en-GB": "Text hover color",
+                    "de-DE": "Text-hover Farbe"
+                },
+                "type": "color",
+                "value": "#3d3d3d",
+                "editable": true,
+                "block": "footer"
+            },
+            "mrpix-gastrostockholm-bestseller-background": {
+                "label": {
+                    "en-GB": "Background color",
+                    "de-DE": "Hintergrund Farbe"
+                },
+                "type": "color",
+                "value": "#d7dbde",
+                "editable": true,
+                "block": "bestseller"
+            },
+            "mrpix-gastrostockholm-bestseller-button-color": {
+                "label": {
+                    "en-GB": "Button text and border color",
+                    "de-DE": "Button Text- und Rahmen Farbe"
+                },
+                "type": "color",
+                "value": "#000000",
+                "editable": true,
+                "block": "bestseller"
+            },
+            "mrpix-gastrostockholm-bestseller-button-background": {
+                "label": {
+                    "en-GB": "Button background color",
+                    "de-DE": "Button Hintergrund Farbe"
+                },
+                "type": "color",
+                "value": "#ffffff",
+                "editable": true,
+                "block": "bestseller"
+            }
+        }
+    }
+}

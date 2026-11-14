@@ -1,0 +1,32 @@
+@font-face {
+    font-family: 'Roboto Mono';
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+    src: url('#{$sw-asset-public-url}/bundles/mrpixgastrostockholm/fonts/RobotoMono/RobotoMono-Regular.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+    src: url('#{$sw-asset-public-url}/bundles/mrpixgastrostockholm/fonts/RobotoMono/RobotoMono-Light.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+    src: url('#{$sw-asset-public-url}/bundles/mrpixgastrostockholm/fonts/RobotoMono/RobotoMono-SemiBold.woff2')
+        format('woff2');
+}
+@font-face {
+    font-family: 'Roboto Mono';
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+    src: url('#{$sw-asset-public-url}/bundles/mrpixgastrostockholm/fonts/RobotoMono/RobotoMono-Bold.woff2')
+        format('woff2');
+}

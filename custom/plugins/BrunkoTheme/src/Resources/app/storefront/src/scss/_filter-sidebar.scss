@@ -1,0 +1,65 @@
+// Sidebar filter: every filter group in its own box + search field for long lists.
+
+[hidden] {
+    &.filter-multi-select-list-item {
+        display: none;
+    }
+}
+
+.filter-panel {
+    font-family: var(--brunko-font-base);
+}
+
+.is--sidebar {
+    .filter-panel-item {
+        margin-bottom: 0.75rem;
+        overflow: hidden;
+        border: 1px solid var(--brunko-color-border);
+        border-radius: var(--brunko-radius);
+        background: var(--brunko-color-surface);
+
+        .filter-panel-item-toggle {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 0;
+            border-radius: 0;
+            color: var(--brunko-color-text);
+            font-weight: 600;
+
+            &:focus-visible {
+                outline: 3px solid var(--brunko-color-focus);
+                outline-offset: -3px;
+            }
+
+            &[aria-expanded='true'] {
+                border: 0;
+                color: var(--brunko-color-primary);
+            }
+        }
+
+        .filter-panel-item-dropdown {
+            max-height: 18rem;
+            padding: 0.5rem 1rem 1rem;
+            border: 0;
+            border-top: 1px solid var(--brunko-color-border);
+            border-radius: 0;
+        }
+    }
+}
+
+.brunko-filter-search {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.25rem 0 0.5rem;
+    background: var(--brunko-color-surface);
+
+    .brunko-filter-search-input {
+        border-color: var(--brunko-color-border);
+
+        &:focus-visible {
+            outline: 3px solid var(--brunko-color-focus);
+            outline-offset: 1px;
+        }
+    }
+}

@@ -1,0 +1,29 @@
+{% sw_extends '@Storefront/storefront/layout/header/header.html.twig' %}
+
+{# Hide Top Bar #}
+{% block layout_top_bar %}
+
+{% endblock %}
+
+{# Hide Wishlist #}
+{% block layout_header_actions_wishlist %}
+
+{% endblock %}
+
+{# Hide Search, keep the tablet navigation toggle #}
+{% block layout_header_search %}
+    <div class="col-12 order-2 col-sm order-sm-1 header-search-col">
+        <div class="row">
+            <div class="col-sm-auto d-none d-sm-block d-lg-none">
+                {% block layout_header_navigation_toggle_tablet %}
+                    {{ parent() }}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{# Hide mobile search toggle #}
+{% block layout_header_search_toggle %}
+
+{% endblock %}

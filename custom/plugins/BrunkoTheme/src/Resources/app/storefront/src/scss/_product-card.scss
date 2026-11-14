@@ -1,0 +1,130 @@
+// Product card: second image on hover + buy panel.
+
+.cms-listing-col {
+    position: relative;
+
+    // the hovered card (with its overlapping panel) must be above the cards of the next row
+    &:hover,
+    &:focus-within {
+        z-index: 20;
+    }
+}
+
+.product-box {
+    position: relative;
+    border: 1px solid var(--brunko-color-border);
+    border-radius: var(--brunko-radius);
+    background: var(--brunko-color-surface);
+    color: var(--brunko-color-text);
+    font-family: var(--brunko-font-base);
+}
+
+// --- second image -------------------------------------------------------
+
+.product-image-wrapper .product-image-secondary {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--brunko-transition);
+}
+
+// --- buy row (quantity + button) ---------------------------------------
+
+.brunko-buy-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+
+    .brunko-qty {
+        flex: 0 0 auto;
+
+        .quantity-selector-group {
+            flex-wrap: nowrap;
+            width: auto;
+        }
+
+        .quantity-selector-group-input {
+            width: 3rem;
+            padding-right: 0.25rem;
+            padding-left: 0.25rem;
+            text-align: center;
+        }
+    }
+
+    .d-grid {
+        flex: 1 1 auto;
+    }
+
+    .btn-buy {
+        background-color: var(--brunko-color-primary);
+        border-color: var(--brunko-color-primary);
+        color: var(--brunko-color-primary-contrast);
+    }
+
+    .btn:focus-visible,
+    .form-control:focus-visible {
+        outline: 3px solid var(--brunko-color-focus);
+        outline-offset: 2px;
+    }
+}
+
+// --- default (mobile first / touch): buy row is always visible on the card ---
+
+.product-box .product-action {
+    margin-top: 0.5rem;
+}
+
+// larger touch targets
+@media (pointer: coarse) {
+    .brunko-buy-row .btn,
+    .brunko-buy-row .form-control {
+        min-height: 44px;
+    }
+}
+
+// --- devices with real hover: panel under the card, absolutely positioned ---
+
+@media (hover: hover) and (pointer: fine) {
+    .product-box:hover .product-image-secondary {
+        opacity: 1;
+    }
+
+    .product-box .product-action {
+        position: absolute;
+        top: 100%;
+        right: -1px;
+        left: -1px;
+        z-index: 20;
+        margin-top: 0;
+        padding: 0.75rem;
+        border: 1px solid var(--brunko-color-border);
+        border-top: 0;
+        border-radius: 0 0 var(--brunko-radius) var(--brunko-radius);
+        background: var(--brunko-color-surface);
+        box-shadow: var(--brunko-shadow-panel);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-4px);
+        transition:
+            opacity var(--brunko-transition),
+            transform var(--brunko-transition),
+            visibility 0s linear 0.25s;
+    }
+
+    .product-box:hover .product-action,
+    .product-box:focus-within .product-action {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        transition-delay: 0s;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .product-image-wrapper .product-image-secondary,
+    .product-box .product-action {
+        transition: none;
+    }
+}

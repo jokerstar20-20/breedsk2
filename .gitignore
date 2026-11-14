@@ -1,0 +1,33 @@
+/.idea
+/vendor/
+.env.local
+.env.dev
+.env.local.php
+.env.*.local
+/public/bundles/*
+/public/media/*
+/public/theme/*
+/public/thumbnail/*
+/public/sitemap/*
+/files/*
+!/files/.htaccess
+/var/*
+!/var/.htaccess
+/auth.json
+/install.lock
+/public/asset-manifest.json
+###< shopware/core ###
+
+# lokálne tajomstvá
+/.env
+/.env.*
+!/.env.dist
+/config/jwt/*.pem
+
+# pluginy z obchodu/tretích strán sa do Gitu neukladajú, len naše (Brunko*)
+/custom/plugins/*
+!/custom/plugins/Brunko*
+/.env
+/.env.*
+!/.env.dist
+/config/jwt/*.pem

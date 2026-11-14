@@ -1,0 +1,54 @@
+{
+    "name": "BrunkoTheme",
+    "author": "Brunko",
+    "description": {
+        "en-GB": "Child theme of the Storefront theme",
+        "de-DE": "Child-Theme des Storefront-Themes",
+        "sk-SK": "Potomok témy Storefront"
+    },
+    "views": [
+        "@Storefront",
+        "@Plugins",
+        "@BrunkoTheme"
+    ],
+    "style": [
+        "app/storefront/src/scss/overrides.scss",
+        "@Storefront",
+        "app/storefront/src/scss/base.scss"
+    ],
+    "script": [
+        "@Storefront",
+        "app/storefront/dist/storefront/js/brunko-theme/brunko-theme.js"
+    ],
+    "asset": [
+        "@Storefront"
+    ],
+    "configInheritance": [
+        "@Storefront"
+    ],
+    "config": {
+        "fields": {
+            "sw-color-brand-primary": {
+                "value": "#0b4f8a"
+            },
+            "sw-color-brand-secondary": {
+                "value": "#475569"
+            },
+            "sw-border-color": {
+                "value": "#64748b"
+            },
+            "sw-text-color": {
+                "value": "#1f2933"
+            },
+            "sw-headline-color": {
+                "value": "#111827"
+            },
+            "sw-color-buy-button": {
+                "value": "#0b4f8a"
+            },
+            "sw-color-buy-button-text": {
+                "value": "#ffffff"
+            }
+        }
+    }
+}

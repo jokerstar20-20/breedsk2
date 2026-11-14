@@ -1,0 +1,30 @@
+// ==========================================================================
+// Brunko theme - design tokens (single place for colors, fonts, sizes)
+// ==========================================================================
+
+// Colors (text/primary on white: contrast > 7:1)
+$brunko-color-primary: #0b4f8a !default;
+$brunko-color-primary-contrast: #ffffff !default;
+$brunko-color-text: #1f2933 !default;
+$brunko-color-muted: #52606d !default;
+$brunko-color-surface: #ffffff !default;
+$brunko-color-surface-alt: #f5f7fa !default;
+$brunko-color-border: #cbd2d9 !default;
+$brunko-color-focus: #0b4f8a !default;
+
+// Fonts (system fonts only, no external requests)
+$brunko-font-base: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !default;
+
+// Shape and shadows
+$brunko-radius: 8px !default;
+$brunko-shadow-panel: 0 12px 24px rgba(15, 23, 42, 0.18) !default;
+$brunko-transition: 0.25s ease !default;
+
+// Layout
+$brunko-container-max-width: 1400px !default;
+$brunko-grid-gap: 16px !default;
+$brunko-grid-columns-mobile: 2 !default;
+$brunko-grid-columns-tablet: 3 !default;
+$brunko-grid-columns-desktop: 4 !default;
+$brunko-breakpoint-tablet: 768px !default;
+$brunko-breakpoint-desktop: 1200px !default;

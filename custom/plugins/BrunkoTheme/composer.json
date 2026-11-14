@@ -1,0 +1,34 @@
+{
+    "name": "brunko/theme",
+    "description": "Brunko Theme - child theme of the default Shopware Storefront",
+    "version": "1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Brunko"
+        }
+    ],
+    "require": {
+        "shopware/core": "~6.7.0",
+        "shopware/storefront": "~6.7.0"
+    },
+    "extra": {
+        "shopware-plugin-class": "Brunko\\Theme\\BrunkoTheme",
+        "label": {
+            "de-DE": "Brunko Theme",
+            "en-GB": "Brunko Theme",
+            "sk-SK": "Brunko Theme"
+        },
+        "description": {
+            "de-DE": "Child-Theme des Storefront-Themes mit Produktraster, Hover-Panel und Preis-Slider",
+            "en-GB": "Child theme of the Storefront theme with product grid, hover panel and price slider",
+            "sk-SK": "Potomok témy Storefront s mriežkou produktov, hover panelom a cenovým posuvníkom"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Brunko\\Theme\\": "src/"
+        }
+    }
+}

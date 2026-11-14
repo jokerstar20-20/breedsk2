@@ -1,0 +1,45 @@
+{% sw_extends '@Storefront/storefront/component/listing/filter/filter-range.html.twig' %}
+
+{#
+    Adds a dual range slider above the original number inputs. The number inputs stay in the DOM
+    and remain the source of values for the original FilterRange plugin (see filter-range-slider.plugin.js).
+#}
+{% block component_filter_range_container %}
+    {% set brunkoRangeLower = minInputValue|default(0)|round(0, 'floor') %}
+    {% set brunkoRangeUpper = maxInputValue|default(0)|round(0, 'ceil') %}
+
+    {% if brunkoRangeUpper > brunkoRangeLower %}
+        {% block brunko_filter_range_slider %}
+            <div class="brunko-range-slider">
+                <div class="brunko-range-values">
+                    <output class="brunko-range-output-min"></output>
+                    <output class="brunko-range-output-max"></output>
+                </div>
+
+                <div class="brunko-range-control">
+                    <div class="brunko-range-track">
+                        <div class="brunko-range-fill"></div>
+                    </div>
+
+                    <input type="range"
+                           class="brunko-range-input brunko-range-input-min"
+                           min="{{ brunkoRangeLower }}"
+                           max="{{ brunkoRangeUpper }}"
+                           step="1"
+                           value="{{ brunkoRangeLower }}"
+                           aria-label="{{ displayName }} – {{ 'listing.filterRangeMinLabel'|trans|striptags }}">
+
+                    <input type="range"
+                           class="brunko-range-input brunko-range-input-max"
+                           min="{{ brunkoRangeLower }}"
+                           max="{{ brunkoRangeUpper }}"
+                           step="1"
+                           value="{{ brunkoRangeUpper }}"
+                           aria-label="{{ displayName }} – {{ 'listing.filterRangeMaxLabel'|trans|striptags }}">
+                </div>
+            </div>
+        {% endblock %}
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

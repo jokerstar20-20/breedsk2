@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/Framework/App/Manifest/Schema/manifest-2.0.xsd">
+    <meta>
+        <name>Returnless</name>
+        <label>Returnless</label>
+        <label lang="de-DE">Returnless</label>
+	<label lang="nl-NL">Returnless</label>
+        <description>Connect your Shopware store to Returnless</description>
+        <description lang="de-DE">Verbinden Sie Ihren Shopware-Shop mit Returnless</description>
+	<description lang="nl-NL">Verbind je Shopware winkel met Returnless</description>
+        <author>Returnless</author>
+        <copyright>(c) Returnless</copyright>
+        <version>1.0.0</version>
+        <icon>Resources/images/returnless-icon.png</icon>
+        <license>MIT</license>
+    </meta>
+</manifest>

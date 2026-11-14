@@ -1,0 +1,36 @@
+
+<manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/Framework/App/Manifest/Schema/manifest-3.0.xsd">
+    
+  <meta>
+        
+    <name>MrpixGastroStockholm</name>
+        
+    <label>Stockholm Theme for the plugin mpXgastronomy</label>
+        
+    <label lang="de-DE">Stockholm Theme für das Plugin mpXgastronomy</label>
+        
+    <description>Stockholm theme for the mpXgastronomy plugin: a clean restaurant storefront with Roboto Mono headings and configurable colors for header, navigation, footer and bestseller section.</description>
+        
+    <description lang="de-DE">Stockholm Theme für das Plugin mpXgastronomy: ein klarer Restaurant-Shop mit Roboto-Mono-Überschriften und einstellbaren Farben für Header, Navigation, Footer und Bestseller-Bereich.</description>
+        
+    <author>mr. pixel KG</author>
+        
+    <copyright>(c) by mr. pixel KG</copyright>
+        
+    <version>1.1.1</version>
+        
+    <license>MIT</license>
+        
+    <privacy>https://www.mr-pixel.de/datenschutz/</privacy>
+        
+    <privacyPolicyExtensions>
+            This app processes no information.
+        </privacyPolicyExtensions>
+        
+    <privacyPolicyExtensions lang="de-DE">
+            Diese App verarbeitet keine Daten.
+        </privacyPolicyExtensions>
+    
+  </meta>
+
+</manifest>

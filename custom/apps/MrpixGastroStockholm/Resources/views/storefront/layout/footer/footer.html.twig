@@ -1,0 +1,105 @@
+{% sw_extends '@Storefront/storefront/layout/footer/footer.html.twig' %}
+
+{% block layout_footer_navigation %}
+    {% if feature('v6.8.0.0') %}
+        <ul id="footerColumns"
+            class="row footer-columns list-unstyled"
+            data-collapse-footer-columns="true"
+            role="list">
+    {% else %}
+        <div id="footerColumns"
+             class="row footer-columns"
+             data-collapse-footer-columns="true"
+             role="list">
+    {% endif %}
+
+        {# Payment Methods #}
+        {% block mrpix_gastro_stockholm_footer_navigation_payment %}
+            {% if feature('v6.8.0.0') %}
+                <li class="col-md-4 footer-column js-footer-column" role="listitem">
+            {% else %}
+                <div class="col-md-4 footer-column js-footer-column" role="listitem">
+            {% endif %}
+                {% block mrpix_gastro_stockholm_payment_headline %}
+                    {% if feature('v6.8.0.0') %}
+                        <h2 class="footer-column-headline footer-headline js-footer-column-headline"
+                            id="collapseFooterPaymentMethodsTitle">
+                    {% else %}
+                        <div class="footer-column-headline footer-headline js-footer-column-headline"
+                             id="collapseFooterPaymentMethodsTitle"
+                             role="heading"
+                             aria-level="2">
+                    {% endif %}
+                        {{ 'mrpixGastroStockholm.footer.paymentMethodHeadline'|trans|sw_sanitize }}
+                        {% block mrpix_gastro_stockholm_footer_navigation_payment_icons %}
+                            <button class="footer-column-toggle btn btn-link btn-link-inline js-collapse-footer-column-trigger"
+                                    data-bs-target="#collapseFooterPaymentMethods"
+                                    data-bs-toggle="collapse"
+                                    aria-controls="collapseFooterPaymentMethods"
+                                    aria-labelledby="collapseFooterPaymentMethodsTitle"
+                                    aria-expanded="true">
+                                {% sw_icon 'plus' style {
+                                    class: 'footer-plus'
+                                } %}
+
+                                {% sw_icon 'minus' style {
+                                    class: 'footer-minus'
+                                } %}
+                            </button>
+                        {% endblock %}
+                    {% if feature('v6.8.0.0') %}
+                        </h2>
+                    {% else %}
+                        </div>
+                    {% endif %}
+                {% endblock %}
+
+                {% block mrpix_gastro_stockholm_footer_navigation_payment_content %}
+                    <div id="collapseFooterPaymentMethods"
+                         class="footer-column-content collapse js-footer-column-content footer-contact"
+                         aria-labelledby="collapseFooterPaymentMethodsTitle">
+                        <div class="footer-column-content-inner">
+                            <div class="mrpix-gastrostockholm-footer-paymentmethod">
+                                {% block layout_footer_payment_logos %}
+                                    {{ parent() }}
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                {% endblock %}
+            {% if feature('v6.8.0.0') %}
+                </li>
+            {% else %}
+                </div>
+            {% endif %}
+        {% endblock %}
+
+        {% block layout_footer_navigation_hotline %}
+            {{ parent() }}
+        {% endblock %}
+
+        {% block layout_footer_navigation_columns %}
+            {{ parent() }}
+        {% endblock %}
+    {% if feature('v6.8.0.0') %}
+        </ul>
+    {% else %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{# Hide Default Payment and Shipping Logos #}
+{% block layout_footer_payment_shipping_logos %}
+
+{% endblock %}
+
+{#
+    ---- LAYOUT FOOTER BOTTOM ----
+#}
+
+{# Footer Copyright #}
+{% block layout_footer_copyright %}
+    <div class="footer-copyright">
+        {{ "footer.copyrightInfo"|trans|sw_sanitize }}
+    </div>
+{% endblock %}

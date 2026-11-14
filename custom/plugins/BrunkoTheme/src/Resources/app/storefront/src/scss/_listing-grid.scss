@@ -1,0 +1,42 @@
+// Product listing as CSS grid: 2 columns mobile, 3 tablet, 4 desktop.
+// The Bootstrap row/col markup stays, the grid only replaces its flex layout.
+
+.container-main {
+    max-width: $brunko-container-max-width;
+}
+
+.cms-element-product-listing .cms-listing-row {
+    display: grid;
+    grid-template-columns: repeat($brunko-grid-columns-mobile, minmax(0, 1fr));
+    gap: var(--brunko-grid-gap);
+    margin-right: 0;
+    margin-left: 0;
+    // room for the hover panel below the last row (the panel overlaps the content below)
+    margin-bottom: 4.5rem;
+
+    > .cms-listing-col {
+        flex: none;
+        width: auto;
+        max-width: none;
+        margin-top: 0;
+        padding-right: 0;
+        padding-left: 0;
+
+        // empty result message spans the whole grid
+        &.col-12 {
+            grid-column: 1 / -1;
+        }
+    }
+}
+
+@media (min-width: $brunko-breakpoint-tablet) {
+    .cms-element-product-listing .cms-listing-row {
+        grid-template-columns: repeat($brunko-grid-columns-tablet, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: $brunko-breakpoint-desktop) {
+    .cms-element-product-listing .cms-listing-row {
+        grid-template-columns: repeat($brunko-grid-columns-desktop, minmax(0, 1fr));
+    }
+}

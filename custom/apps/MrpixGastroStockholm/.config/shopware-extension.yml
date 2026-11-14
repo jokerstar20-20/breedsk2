@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://shopware.github.io/shopware-cli/shopware-extension-schema.json
+compatibility_date: 2026-10-15
+
+store:
+    availabilities:
+        - German
+        - International
+    default_locale: de_DE
+    localizations:
+        - de_DE
+        - en_GB
+    type: theme
+    icon: src/Resources/store/icon.png
+    automatic_bugfix_version_compatibility: true
+    description:
+        de: file:src/Resources/store/description.de.html
+        en: file:src/Resources/store/description.en.html
+    tags:
+        de:
+            - mpXgastronomy
+            - Theme Anpassung
+            - Stockholm
+            - mpXcheckout
+        en:
+            - Theme
+            - mpXgastronomy
+            - Stockholm
+            - mpXcheckout
+    highlights:
+        de:
+            - Theme speziell für mpXcheckout Stores
+            - Minimalistisches und elegantes Design
+            - Mit nahezu allen Plugins kompatibel
+        en:
+            - Theme for mpXcheckout stores
+            - Minimalistic and elegant design
+            - Compatible with almost all plugins
+    image_directory: src/Resources/store/images
+
+build:
+    zip:
+        pack:
+            excludes:
+                paths:
+                    - src
+
+validation:
+    store_compliance: true
+    ignore:
+        - identifier: theme.validator
+          message: src/Resources/
+        - identifier: stylelint/selector-max-type
+          message: like "h1"
+          path: Resources/app/storefront/src/scss/base.scss
+        - identifier: stylelint/selector-max-type
+          message: like "h2"
+          path: Resources/app/storefront/src/scss/base.scss
+        - identifier: stylelint/selector-max-type
+          message: like "h3"
+          path: Resources/app/storefront/src/scss/base.scss
