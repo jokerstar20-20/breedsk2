@@ -155,18 +155,7 @@
 
         // Farba s obrázkom (napr. Viacfarebná): okrúhly kruh ako ostatné farby, obrázok vyplní celý kruh
         .product-detail-configurator-option-label.is-display-media {
-            width: 1.25rem !important;
-            min-width: 1.25rem !important;
-            height: 1.25rem !important;
-            padding: 0 !important;
-            border-radius: 50% !important;
-            overflow: hidden;
-
-            img {
-                width: 100% !important;
-                height: 100% !important;
-                object-fit: cover;
-            }
+            --bs--configurator-display-color-size: 25px; // rovnako ako farebné kruhy v karte (RHWebFoundation)
         }
 
         // Pôvodná bodka / delivery time z RHWebFoundation je nahradená vlastnou dostupnosťou
@@ -294,5 +283,23 @@
         &.brunko-promo-flyer .brunko-promo-box {
             background-color: #e30613;
         }
+    }
+}
+
+// Farba s obrázkom (napr. Viacfarebná) v karte aj v detaile: okrúhly kruh rovnakej veľkosti ako farebné kruhy
+// (veľkosť určuje --bs--configurator-display-color-size z RHWebFoundation), obrázok vyplní celý kruh.
+body.rhweb-foundation .product-detail-configurator .product-detail-configurator-option-label.is-display-media {
+    width: var(--bs--configurator-display-color-size) !important;
+    height: var(--bs--configurator-display-color-size) !important;
+    min-width: unset !important;
+    padding: .125rem !important;
+    border-radius: 100% !important;
+    overflow: hidden;
+
+    img {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 50%;
+        object-fit: cover;
     }
 }
