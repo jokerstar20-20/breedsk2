@@ -32,6 +32,10 @@ class ImportAutronicCommand extends Command
     /** Vlastnost, podla ktorej sa robia varianty (feed: ColorVariants). */
     private const VARIANT_PARAM = 'Farba primárna';
     private const BATCH = 200;
+    private const MANUFACTURER = 'Autronic';
+
+    /** ID vyrobcu Autronic (nastavuje sa v doImport). */
+    private string $manufacturerId = '';
 
     public function __construct(
         private readonly AutronicFeedReader $reader,
@@ -40,6 +44,7 @@ class ImportAutronicCommand extends Command
         private readonly Connection $db,
         private readonly EntityRepository $productRepository,
         private readonly EntityRepository $taxRepository,
+        private readonly EntityRepository $manufacturerRepository,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
@@ -79,9 +84,20 @@ class ImportAutronicCommand extends Command
         $items = [];
         $skipped = 0;
         $dupes = 0;
+        $noPrice = 0;
+        $named = 0;
         foreach ($this->reader->read($file) as $p) {
             if ($p['code'] === '' || $p['cat_code'] === '') {
                 continue;
+            }
+            // Bez ceny sa produkt neimportuje (aby sa nepredaval zadarmo); ak uz v e-shope je, skryje sa ako vypadnuty z feedu.
+            if ($p['retail'] <= 0 && $p['retail_promo'] <= 0) {
+                $noPrice++;
+                continue;
+            }
+            if ($p['name'] === '') {
+                $p['name'] = self::MANUFACTURER . ' ' . $p['code'];
+                $named++;
             }
             foreach (self::SKIP_PREFIXES as $prefix) {
                 if (str_starts_with($p['cat_code'], $prefix)) {
@@ -106,7 +122,7 @@ class ImportAutronicCommand extends Command
                 break;
             }
         }
-        $io->writeln(sprintf('Feed: %d produktov na import, %d preskocenych (DE-), %d duplicit', count($items), $skipped, $dupes));
+        $io->writeln(sprintf('Feed: %d produktov na import, %d preskocenych (DE-), %d duplicit, %d bez ceny (preskocene), %d bez nazvu (nazov = Autronic + kod)', count($items), $skipped, $dupes, $noPrice, $named));
 
         // --- 3. poistka ---
         $state = [];
@@ -136,6 +152,7 @@ class ImportAutronicCommand extends Command
             return Command::FAILURE;
         }
         $taxId = $this->taxId(23.0, $dry);
+        $this->manufacturerId = $this->ensureManufacturer($systemLang, $skLang, $dry);
         $this->categories->init($sc['nav'], $skLang, $systemLang);
         $ctx = Context::createDefaultContext();
 
@@ -372,6 +389,7 @@ class ImportAutronicCommand extends Command
             'productNumber' => $p['code'],
             'ean' => $p['ean'],
             'taxId' => $taxId,
+            'manufacturerId' => $this->manufacturerId,
             'price' => [$price],
             'purchasePrices' => [[
                 'currencyId' => Defaults::CURRENCY,
@@ -444,6 +462,7 @@ class ImportAutronicCommand extends Command
     {
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
+        $p['_mf'] = 1; // vyrobca Autronic => jednorazovo prepise existujuce produkty
         if ($hasColor) {
             $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
@@ -663,6 +682,7 @@ class ImportAutronicCommand extends Command
             'id' => $parentId,
             'productNumber' => $parentNumber,
             'taxId' => $taxId,
+            'manufacturerId' => $this->manufacturerId,
             'price' => [$this->priceStruct($cheapest)],
             'stock' => $stock,
             'active' => $active,
@@ -697,6 +717,28 @@ class ImportAutronicCommand extends Command
         }
 
         return $row;
+    }
+
+    /** Vyrobca Autronic: pouzije sa existujuci (podla nazvu), inak sa vytvori. */
+    private function ensureManufacturer(string $systemLang, string $skLang, bool $dry): string
+    {
+        $existing = $this->db->fetchOne(
+            'SELECT LOWER(HEX(m.id)) FROM product_manufacturer m INNER JOIN product_manufacturer_translation t ON t.product_manufacturer_id = m.id
+             WHERE t.name = ? AND m.version_id = UNHEX(?) LIMIT 1',
+            [self::MANUFACTURER, Defaults::LIVE_VERSION]
+        );
+        if ($existing) {
+            return $existing;
+        }
+        $id = md5('brunko:manufacturer:' . self::SUPPLIER);
+        if (!$dry) {
+            $this->manufacturerRepository->upsert([[
+                'id' => $id,
+                'translations' => [$systemLang => ['name' => self::MANUFACTURER], $skLang => ['name' => self::MANUFACTURER]],
+            ]], Context::createDefaultContext());
+        }
+
+        return $id;
     }
 
     /** @param array<string,array{value:string,unit:?string}> $params */
