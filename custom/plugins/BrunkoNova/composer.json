@@ -1,0 +1,31 @@
+{
+    "name": "brunko/nova",
+    "description": "BrunkoNova - child theme of RHWebThemeNova",
+    "version": "v1.0.0",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Brunko"
+        }
+    ],
+    "require": {
+        "shopware/core": "6.7.*"
+    },
+    "type": "shopware-platform-plugin",
+    "autoload": {
+        "psr-4": {
+            "Brunko\\Nova\\": "src/"
+        }
+    },
+    "extra": {
+        "shopware-plugin-class": "Brunko\\Nova\\BrunkoNova",
+        "label": {
+            "de-DE": "BrunkoNova",
+            "en-GB": "BrunkoNova"
+        },
+        "description": {
+            "de-DE": "Child-Theme von RHWebThemeNova",
+            "en-GB": "Child theme of RHWebThemeNova"
+        }
+    }
+}

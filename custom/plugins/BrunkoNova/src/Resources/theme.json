@@ -1,0 +1,29 @@
+{
+    "name": "BrunkoNova",
+    "author": "Brunko",
+    "previewMedia": "app/child-theme-preview.jpg",
+    "views": [
+        "@Storefront",
+        "@RHWebThemeNova",
+        "@BrunkoNova",
+        "@Plugins"
+    ],
+    "style": [
+        "app/storefront/src/scss/overrides.scss",
+        "@Storefront",
+        "@RHWebThemeNova",
+        "app/storefront/src/scss/base.scss"
+    ],
+    "script": [
+        "@RHWebThemeNova",
+        "app/storefront/dist/storefront/js/brunko-nova/brunko-nova.js"
+    ],
+    "asset": [
+        "@Storefront",
+        "@RHWebThemeNova",
+        "app/storefront/src/assets"
+    ],
+    "configInheritance": [
+        "@RHWebThemeNova"
+    ]
+}
