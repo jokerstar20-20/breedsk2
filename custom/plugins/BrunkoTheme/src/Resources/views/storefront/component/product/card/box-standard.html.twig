@@ -1,5 +1,8 @@
 {% sw_extends '@Storefront/storefront/component/product/card/box-standard.html.twig' %}
 
+{# Hide product description - only show image, name, and price #}
+{% block component_product_box_description %}{% endblock %}
+
 {# Second product image shown on hover (desktop). Falls back to the original cover when no other image exists. #}
 {% block component_product_box_image_thumbnail %}
     {{ parent() }}

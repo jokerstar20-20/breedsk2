@@ -1,5 +1,10 @@
 // Product card: second image on hover + buy panel.
 
+// Hide product description text (correct selector: .product-description)
+.product-description {
+    display: none;
+}
+
 .cms-listing-col {
     position: relative;
 
