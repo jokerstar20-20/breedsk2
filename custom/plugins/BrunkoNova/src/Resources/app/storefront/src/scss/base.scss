@@ -1,0 +1,27 @@
+
+// BrunkoNova: výpis produktov, 2 / 3 / 4 v riadku
+.cms-element-product-listing {
+    .cms-listing-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.5rem;
+        margin-left: 0;
+        margin-right: 0;
+
+        @media (min-width: 992px) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        @media (min-width: 1400px) {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    .cms-listing-col {
+        width: auto;
+        max-width: none;
+        flex: none;
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
