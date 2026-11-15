@@ -72,6 +72,13 @@ final class PropertyMap
         'transparentná' => '#e8f1f5',
     ];
 
+    /** Hodnoty z feedu, ktore patria pod inu farbu (male pismena => nazov). */
+    private const ALIASES = [
+        'vzor' => 'Viacfarebná',
+        'viacfarebné' => 'Viacfarebná',
+        'viacfarebný' => 'Viacfarebná',
+    ];
+
     /** Zobrazovany nazov skupiny. */
     public static function groupLabel(string $param): string
     {
@@ -94,6 +101,9 @@ final class PropertyMap
             return $value;
         }
         [$base, $num] = self::splitNumber($value);
+        if (isset(self::ALIASES[mb_strtolower($base)])) {
+            return self::ALIASES[mb_strtolower($base)] . $num;
+        }
         $canonical = self::canonicalColor($base);
 
         return $canonical !== null ? mb_strtoupper(mb_substr($canonical, 0, 1)) . mb_substr($canonical, 1) . $num : $value;
@@ -109,6 +119,7 @@ final class PropertyMap
         $out = [];
         foreach (explode(' / ', trim($value)) as $part) {
             $base = self::splitNumber($part)[0];
+            $base = self::ALIASES[mb_strtolower($base)] ?? $base;
             if ($base !== '') {
                 $out[mb_strtolower($base)] = $base;
             }

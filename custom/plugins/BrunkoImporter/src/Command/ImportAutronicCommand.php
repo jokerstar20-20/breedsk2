@@ -312,7 +312,7 @@ class ImportAutronicCommand extends Command
                     $mediaMarks[$oid] = $mid;
                 }
             }
-            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $sizes, $mediaMarks, 'nm5'], JSON_UNESCAPED_UNICODE));
+            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $sizes, $mediaMarks, 'nm6'], JSON_UNESCAPED_UNICODE));
             $parentIsNew = !isset($state[$parentKey]);
             $allSame = !$parentIsNew && $state[$parentKey]['hash'] === $groupHash;
             foreach ($codes as $c) {
@@ -501,7 +501,7 @@ class ImportAutronicCommand extends Command
     {
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
-        $p['_mf'] = 5; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
+        $p['_mf'] = 6; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
         if ($hasColor) {
             $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
