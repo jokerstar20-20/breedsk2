@@ -261,6 +261,7 @@ class ImportAutronicCommand extends Command
 
             $catId = $this->categoryId($p, $dry);
             $row = $this->buildProduct($p, $catId, $taxId, $systemLang, $skLang, $sc['id'], $isNew);
+            $this->cleanLinks($row['id'], $isNew, $dry);
             if ($detach) {
                 $row['parentId'] = null;
             }
@@ -307,7 +308,7 @@ class ImportAutronicCommand extends Command
                     $mediaMarks[$oid] = $this->optionMedia()[$oid];
                 }
             }
-            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $mediaMarks, 'nm2'], JSON_UNESCAPED_UNICODE));
+            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $mediaMarks, 'nm3'], JSON_UNESCAPED_UNICODE));
             $parentIsNew = !isset($state[$parentKey]);
             $allSame = !$parentIsNew && $state[$parentKey]['hash'] === $groupHash;
             foreach ($codes as $c) {
@@ -343,6 +344,7 @@ class ImportAutronicCommand extends Command
                 $isNew ? $stats['new']++ : $stats['changed']++;
                 $mCat = $this->categoryId($m, $dry);
                 $row = $this->buildProduct($m, $mCat, $taxId, $systemLang, $skLang, $sc['id'], $isNew);
+                $this->cleanLinks($row['id'], $isNew, $dry);
                 $row['parentId'] = $parentId;
                 $row['options'] = [$this->optionRow(self::VARIANT_PARAM, $colors[$c], $systemLang, $skLang)];
                 $batchMeta[count($batch)] = ['code' => $c, 'pid' => $row['id'], 'hash' => $memberHashes[$c]];
@@ -386,6 +388,16 @@ class ImportAutronicCommand extends Command
         $this->logger->info('Brunko import autronic', $stats);
 
         return $stats['failed'] > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    /** Pri zmene farby DAL stare vazby (options, properties) neodstrani, preto sa pred zapisom zmazu. */
+    private function cleanLinks(string $productId, bool $isNew, bool $dry): void
+    {
+        if ($isNew || $dry) {
+            return;
+        }
+        $this->db->executeStatement('DELETE FROM product_option WHERE product_id = UNHEX(?)', [$productId]);
+        $this->db->executeStatement('DELETE FROM product_property WHERE product_id = UNHEX(?)', [$productId]);
     }
 
     /** @param array<string,mixed> $p */
@@ -477,7 +489,7 @@ class ImportAutronicCommand extends Command
     {
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
-        $p['_mf'] = 3; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
+        $p['_mf'] = 4; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
         if ($hasColor) {
             $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
@@ -814,7 +826,13 @@ class ImportAutronicCommand extends Command
                 }
             }
         }
-        $refined = []; // kod => spresnena farba
+        // farba vzdy podla pripony kodu (CRM => Krémová, CRM2 => Krémová 2); inak ostava z feedu
+        $refined = [];
+        foreach (array_keys($own) as $code) {
+            if (($n = ColorShades::name((string) $code)) !== null) {
+                $refined[(string) $code] = $n;
+            }
+        }
         $seen = [];
         foreach (array_keys($adj) as $start) {
             if (isset($seen[$start])) {
@@ -837,21 +855,13 @@ class ImportAutronicCommand extends Command
             }
             $cv = [];
             foreach ($component as $code) {
-                $cv[$code] = $own[$code] !== '' ? $own[$code] : ($ref[$code] ?? '');
+                $cv[$code] = $refined[$code] ?? ($own[$code] !== '' ? $own[$code] : ($ref[$code] ?? ''));
             }
-            $lower = array_map('mb_strtolower', $cv);
-            $dups = array_filter(array_count_values($lower), fn (int $n): bool => $n > 1);
-            if (!$dups) {
-                continue;
-            }
-            $names = [];
-            foreach ($cv as $code => $colour) {
-                $names[$code] = isset($dups[mb_strtolower($colour)]) ? ColorShades::refine((string) $code, $colour) : $colour;
-            }
-            // ani po spresneni nesmu byt dve rovnake => pripona kodu v zatvorke
-            foreach (array_count_values(array_map('mb_strtolower', $names)) as $name => $n) {
+            // ak su dve farby v skupine rovnake (napr. OAK a DUB), rozlisi ich pripona kodu
+            $names = $cv;
+            foreach (array_count_values(array_map('mb_strtolower', $cv)) as $name => $n) {
                 if ($n > 1) {
-                    foreach ($names as $code => $v) {
+                    foreach ($cv as $code => $v) {
                         if (mb_strtolower($v) === $name) {
                             $names[$code] = $v . ' (' . ColorShades::suffix((string) $code) . ')';
                         }
@@ -859,9 +869,7 @@ class ImportAutronicCommand extends Command
                 }
             }
             foreach ($names as $code => $name) {
-                if ($name !== $cv[$code]) {
-                    $refined[$code] = $name;
-                }
+                $refined[$code] = $name;
             }
         }
 

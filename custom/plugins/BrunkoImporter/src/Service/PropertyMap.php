@@ -82,9 +82,10 @@ final class PropertyMap
         if (self::displayType($param) !== 'color') {
             return $value;
         }
-        $canonical = self::canonicalColor($value);
+        [$base, $num] = self::splitNumber($value);
+        $canonical = self::canonicalColor($base);
 
-        return $canonical !== null ? mb_strtoupper(mb_substr($canonical, 0, 1)) . mb_substr($canonical, 1) : $value;
+        return $canonical !== null ? mb_strtoupper(mb_substr($canonical, 0, 1)) . mb_substr($canonical, 1) . $num : $value;
     }
 
     /** Hex kod farby pre hodnotu, ak je skupina farebna a farbu poznáme. */
@@ -93,9 +94,15 @@ final class PropertyMap
         if (self::displayType($param) !== 'color') {
             return null;
         }
-        $canonical = self::canonicalColor($value);
+        $canonical = self::canonicalColor(self::splitNumber($value)[0]);
 
         return $canonical !== null ? self::COLORS[$canonical] : null;
+    }
+
+    /** "Krémová 2" => ["Krémová", " 2"] (cislo odtiena sa pri hex kode ignoruje). */
+    private static function splitNumber(string $value): array
+    {
+        return preg_match('/^(.*\S)\s+(\d+)$/u', trim($value), $m) ? [$m[1], ' ' . $m[2]] : [trim($value), ''];
     }
 
     /** Kluc v COLORS pre hodnotu (presne, alebo bez ohladu na rod: prirodne/prirodny/prirodna). */

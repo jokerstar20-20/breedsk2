@@ -4,8 +4,7 @@ namespace Brunko\Importer\Service;
 
 /**
  * Spresnenie nazvu farby Autronicu podla pripony kodu produktu (80001-01 BK, TV-915 GREY2, TV-915 LAN2):
- * pismena = farba (GREY sivá, CRM kremová, LAN lanyzova ...), cislo = odtien (GREY2 svetlosiva, GREY3 tmavosiva).
- * Pouziva sa len tam, kde by sa v skupine variantov inak opakovala ta ista farba z feedu.
+ * pismena = farba (GREY Sivá, CRM Krémová, LAN Lanýžová ...), cislo = odtien (CRM2 => Krémová 2). Hex kod je pre vsetky odtiene rovnaky.
  */
 final class ColorShades
 {
@@ -20,12 +19,6 @@ final class ColorShades
         'CSM' => 'Kašmírová', 'ELM' => 'Jilm', 'CR' => 'Chróm',
     ];
 
-    /** Pismena + cislo => nazov (odtiene, ktore poznáme). */
-    private const SHADES = [
-        'GREY2' => 'Svetlosivá',
-        'GREY3' => 'Tmavosivá',
-    ];
-
     /** Pripona kodu za poslednou medzerou ("TV-915 GREY2" => "GREY2"). */
     public static function suffix(string $code): string
     {
@@ -34,18 +27,19 @@ final class ColorShades
         return strtoupper($pos === false ? $code : substr($code, $pos + 1));
     }
 
-    public static function refine(string $code, string $feedColour): string
+    /**
+     * Nazov farby podla pripony kodu: CRM => Krémová, CRM2 => Krémová 2, CRM3 => Krémová 3.
+     * Null, ak kod nema priponu so znamou skratkou farby.
+     */
+    public static function name(string $code): ?string
     {
-        $suffix = self::suffix($code);
-        if (isset(self::SHADES[$suffix])) {
-            return self::SHADES[$suffix];
+        if (!str_contains($code, ' ')) {
+            return null;
         }
-        if (preg_match('/^([A-Z]+)(\d*)/', $suffix, $m) && isset(self::TOKENS[$m[1]])) {
-            $name = self::TOKENS[$m[1]];
-
-            return $m[2] === '' || $m[2] === '1' ? $name : $name . ' ' . $m[2];
+        if (preg_match('/^([A-Z]+)(\d*)$/', self::suffix($code), $m) && isset(self::TOKENS[$m[1]])) {
+            return $m[2] === '' ? self::TOKENS[$m[1]] : self::TOKENS[$m[1]] . ' ' . $m[2];
         }
 
-        return $feedColour . ' (' . $suffix . ')';
+        return null;
     }
 }
