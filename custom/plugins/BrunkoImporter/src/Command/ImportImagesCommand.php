@@ -4,6 +4,7 @@ namespace Brunko\Importer\Command;
 
 use Brunko\Importer\Feed\AutronicFeedReader;
 use Brunko\Importer\Feed\FeedDownloader;
+use Brunko\Importer\Feed\KondelaFeedReader;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Content\Media\File\FileFetcher;
@@ -18,16 +19,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
- * Stiahne obrazky produktov, ktore ich este nemaju. Kazdy obrazok (podla URL) sa stiahne len raz.
+ * Stiahne obrazky produktov (Autronic aj Kondela). Kazdy obrazok (podla URL) sa stiahne len raz.
+ * Doplna: produkt, ktory ma menej obrazkov nez --max-images (a feed ich ma viac), dostane chybajuce. Nic sa nemaze ani neprepisuje,
+ * takze je mozne najprv pustit napr. --max-images=3 a neskor --max-images=10.
  */
-#[AsCommand(name: 'brunko:import:images', description: 'Stiahne chybajuce obrazky produktov z feedu Autronic')]
+#[AsCommand(name: 'brunko:import:images', description: 'Stiahne chybajuce obrazky produktov z feedov Autronic a Kondela')]
 class ImportImagesCommand extends Command
 {
-    private const SUPPLIER = 'autronic';
     private const SKIP_PREFIXES = ['DE-'];
 
     public function __construct(
         private readonly AutronicFeedReader $reader,
+        private readonly KondelaFeedReader $kondela,
         private readonly FeedDownloader $feeds,
         private readonly Connection $db,
         private readonly EntityRepository $productRepository,
@@ -41,10 +44,11 @@ class ImportImagesCommand extends Command
 
     protected function configure(): void
     {
-        $this->addOption('file', null, InputOption::VALUE_REQUIRED, 'Lokalny XML subor namiesto stiahnutia z URL')
-            ->addOption('no-download', null, InputOption::VALUE_NONE, 'Nesťahuj feed, pouzi existujuci var/feeds/autronic.xml')
+        $this->addOption('supplier', null, InputOption::VALUE_REQUIRED, 'autronic, kondela alebo all', 'all')
+            ->addOption('file', null, InputOption::VALUE_REQUIRED, 'Lokalny XML subor namiesto stiahnutia z URL (len s --supplier=autronic|kondela)')
+            ->addOption('no-download', null, InputOption::VALUE_NONE, 'Nesťahuj feed, pouzi existujuci var/feeds/<dodavatel>.xml')
             ->addOption('max-images', null, InputOption::VALUE_REQUIRED, 'Max obrazkov na produkt', '5')
-            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Spracuj najviac N produktov (test)')
+            ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Spracuj najviac N produktov na dodavatela (test)')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Nic nestahuj');
     }
 
@@ -54,40 +58,70 @@ class ImportImagesCommand extends Command
         $max = max(1, (int) $input->getOption('max-images'));
         $limit = $input->getOption('limit') !== null ? (int) $input->getOption('limit') : null;
         $dry = (bool) $input->getOption('dry-run');
+        $supplier = strtolower((string) $input->getOption('supplier'));
+        $suppliers = $supplier === 'all' ? ['autronic', 'kondela'] : [$supplier];
+        foreach ($suppliers as $s) {
+            if (!in_array($s, ['autronic', 'kondela'], true)) {
+                $io->error('Neznamy dodavatel: ' . $s);
 
-        try {
-            $file = $this->feeds->resolve($input->getOption('file'), (bool) $input->getOption('no-download'), $io);
-        } catch (\RuntimeException $e) {
-            $io->error($e->getMessage());
+                return Command::INVALID;
+            }
+        }
+        if ($input->getOption('file') && count($suppliers) !== 1) {
+            $io->error('--file sa da pouzit len spolu s --supplier=autronic alebo kondela.');
 
-            return Command::FAILURE;
+            return Command::INVALID;
         }
 
-        return $this->process($io, $file, $max, $limit, $dry);
+        $rc = Command::SUCCESS;
+        foreach ($suppliers as $s) {
+            $io->section(ucfirst($s));
+            try {
+                $file = $s === 'kondela'
+                    ? $this->feeds->resolve($input->getOption('file'), (bool) $input->getOption('no-download'), $io, 'kondela', 'PRODUKT', 1)
+                    : $this->feeds->resolve($input->getOption('file'), (bool) $input->getOption('no-download'), $io);
+            } catch (\RuntimeException $e) {
+                $io->error($e->getMessage());
+                $rc = Command::FAILURE;
+                continue;
+            }
+            $this->process($io, $s, $file, $max, $limit, $dry);
+        }
+
+        return $rc;
     }
 
-    private function process(SymfonyStyle $io, string $file, int $max, ?int $limit, bool $dry): int
+    private function process(SymfonyStyle $io, string $supplier, string $file, int $max, ?int $limit, bool $dry): void
     {
         $known = [];
-        foreach ($this->db->fetchAllAssociative('SELECT code, LOWER(HEX(product_id)) AS pid FROM brunko_import_state WHERE supplier = ?', [self::SUPPLIER]) as $r) {
+        foreach ($this->db->fetchAllAssociative('SELECT code, LOWER(HEX(product_id)) AS pid FROM brunko_import_state WHERE supplier = ?', [$supplier]) as $r) {
             $known[$r['code']] = $r['pid'];
         }
-        $withMedia = array_fill_keys($this->db->fetchFirstColumn('SELECT DISTINCT LOWER(HEX(product_id)) FROM product_media'), true);
+        $have = [];
+        foreach ($this->db->fetchAllAssociative('SELECT LOWER(HEX(product_id)) AS pid, COUNT(*) AS n FROM product_media GROUP BY product_id') as $r) {
+            $have[$r['pid']] = (int) $r['n'];
+        }
         $folderId = $this->db->fetchOne("SELECT LOWER(HEX(mf.id)) FROM media_folder mf INNER JOIN media_default_folder mdf ON mf.default_folder_id = mdf.id WHERE mdf.entity = 'product' LIMIT 1") ?: null;
         $ctx = Context::createDefaultContext();
+        $items = $supplier === 'kondela' ? $this->kondela->read($file) : $this->reader->read($file);
 
         $todo = 0;
         $ok = 0;
         $failed = 0;
-        foreach ($this->reader->read($file) as $p) {
+        foreach ($items as $p) {
             $code = $p['code'];
-            if (!isset($known[$code]) || isset($withMedia[$known[$code]]) || !$p['images']) {
+            if (!isset($known[$code]) || !$p['images']) {
                 continue;
             }
             foreach (self::SKIP_PREFIXES as $prefix) {
-                if (str_starts_with($p['cat_code'], $prefix)) {
+                if (str_starts_with((string) $p['cat_code'], $prefix)) {
                     continue 2;
                 }
+            }
+            $pid = $known[$code];
+            $urls = array_slice($p['images'], 0, $max);
+            if (($have[$pid] ?? 0) >= count($urls)) {
+                continue; // uz ma dost obrazkov
             }
             if ($limit !== null && $todo >= $limit) {
                 break;
@@ -97,9 +131,8 @@ class ImportImagesCommand extends Command
                 continue;
             }
 
-            $pid = $known[$code];
             $media = [];
-            foreach (array_slice($p['images'], 0, $max) as $i => $url) {
+            foreach ($urls as $i => $url) {
                 $mediaId = md5('brunko:media:' . $url);
                 try {
                     $this->ensureMedia($mediaId, $url, $code, $folderId, $ctx);
@@ -122,26 +155,28 @@ class ImportImagesCommand extends Command
             }
         }
 
-        $parents = $dry ? 0 : $this->copyMediaToParents($ctx);
+        $parents = $dry ? 0 : $this->copyMediaToParents($supplier, $ctx);
 
-        $io->success(sprintf('%s: produktov bez obrazka %d, stiahnute obrazky %d, zlyhane %d, hlavne produkty variantov s obrazkami %d', $dry ? '[DRY-RUN]' : 'Hotovo', $todo, $ok, $failed, $parents));
-
-        return Command::SUCCESS;
+        $io->success(sprintf('%s: produktov na doplnenie %d, spracovane obrazky %d, zlyhane %d, hlavne produkty variantov aktualizovane %d', $dry ? '[DRY-RUN]' : 'Hotovo', $todo, $ok, $failed, $parents));
     }
 
     /**
      * Hlavny produkt variantov (v zozname sa zobrazuje namiesto variantov) nema vlastne obrazky,
-     * preto dostane obrazky prveho variantu, ktory ich ma. Medialne subory sa nekopiruju, len sa prepoja.
+     * preto dostane obrazky prveho variantu, ktory ich ma (vratane doplnenia, ked ich variant dostal viac).
+     * Medialne subory sa nekopiruju, len sa prepoja.
      */
-    private function copyMediaToParents(Context $ctx): int
+    private function copyMediaToParents(string $supplier, Context $ctx): int
     {
         $parents = $this->db->fetchFirstColumn(
             "SELECT LOWER(HEX(p.id)) FROM product p
              WHERE p.version_id = UNHEX(?) AND p.parent_id IS NULL
-               AND EXISTS (SELECT 1 FROM brunko_import_state s WHERE s.supplier = ? AND s.product_id = p.id AND s.code LIKE 'PARENT:%')
-               AND NOT EXISTS (SELECT 1 FROM product_media pm WHERE pm.product_id = p.id)",
-            [\Shopware\Core\Defaults::LIVE_VERSION, self::SUPPLIER]
+               AND EXISTS (SELECT 1 FROM brunko_import_state s WHERE s.supplier = ? AND s.product_id = p.id AND s.code LIKE 'PARENT:%')",
+            [\Shopware\Core\Defaults::LIVE_VERSION, $supplier]
         );
+        $have = [];
+        foreach ($this->db->fetchAllAssociative('SELECT LOWER(HEX(product_id)) AS pid, COUNT(*) AS n FROM product_media GROUP BY product_id') as $r) {
+            $have[$r['pid']] = (int) $r['n'];
+        }
 
         $done = 0;
         foreach ($parents as $parentId) {
@@ -159,7 +194,7 @@ class ImportImagesCommand extends Command
                  ORDER BY pm.position',
                 [$parentId, \Shopware\Core\Defaults::LIVE_VERSION, $parentId, \Shopware\Core\Defaults::LIVE_VERSION]
             );
-            if (!$rows) {
+            if (!$rows || ($have[$parentId] ?? 0) >= count($rows)) {
                 continue;
             }
             $media = [];

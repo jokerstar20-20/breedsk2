@@ -48,6 +48,7 @@
 
         <service id="Brunko\Importer\Command\ImportImagesCommand">
             <argument type="service" id="Brunko\Importer\Feed\AutronicFeedReader"/>
+            <argument type="service" id="Brunko\Importer\Feed\KondelaFeedReader"/>
             <argument type="service" id="Brunko\Importer\Feed\FeedDownloader"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>
             <argument type="service" id="product.repository"/>
