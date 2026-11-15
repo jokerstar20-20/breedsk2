@@ -60,6 +60,10 @@
                     "label": "IČ DPH"
                 }
             }
+        },
+        "sidebar": {
+            "categories": "Kategórie",
+            "search": "Hľadať vo filtroch ..."
         }
     },
     "general": {
