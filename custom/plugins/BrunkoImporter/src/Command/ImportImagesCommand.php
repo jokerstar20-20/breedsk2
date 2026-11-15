@@ -208,6 +208,18 @@ class ImportImagesCommand extends Command
         return $done;
     }
 
+    /** Kondela ma v nazvoch suborov medzery a diakritiku (posteľ, béžová): cesta sa zakoduje po castiach, uz zakodovane znaky ostavaju. */
+    private function encodeUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        if (!is_array($parts) || !isset($parts['host'], $parts['path'])) {
+            return str_replace(' ', '%20', $url);
+        }
+        $path = implode('/', array_map(static fn (string $seg) => rawurlencode(rawurldecode($seg)), explode('/', $parts['path'])));
+
+        return ($parts['scheme'] ?? 'https') . '://' . $parts['host'] . (isset($parts['port']) ? ':' . $parts['port'] : '') . $path . (isset($parts['query']) ? '?' . $parts['query'] : '');
+    }
+
     private function ensureMedia(string $mediaId, string $url, string $code, ?string $folderId, Context $ctx): void
     {
         $exists = $this->db->fetchOne('SELECT 1 FROM media WHERE id = UNHEX(?) AND file_name IS NOT NULL', [$mediaId]);
@@ -219,7 +231,7 @@ class ImportImagesCommand extends Command
         $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION)) ?: 'jpg';
         $name = trim(strtolower((string) preg_replace('/[^a-z0-9]+/i', '-', $code)), '-') . '-' . substr(md5($url), 0, 8);
 
-        $mediaFile = $this->fetcher->fetchFromURL(str_replace(' ', '%20', $url), $name, $ext); // Kondela ma v URL medzery
+        $mediaFile = $this->fetcher->fetchFromURL($this->encodeUrl($url), $name, $ext);
         try {
             $this->saver->persistFileToMedia($mediaFile, $name, $mediaId, $ctx);
         } finally {
