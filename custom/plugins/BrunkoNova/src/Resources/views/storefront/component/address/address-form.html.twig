@@ -1,0 +1,24 @@
+{% sw_extends '@Storefront/storefront/component/address/address-form.html.twig' %}
+
+{# BrunkoNova: firemné údaje SK – IČO a DIČ (IČ DPH je štandardné pole "VAT ID"). Ukladajú sa ako vlastné polia adresy (set brunko_company). #}
+{% block component_address_form_company_department %}
+    {{ parent() }}
+
+    {% set brunkoCf = data.get('customFields') ?? {} %}
+    {% sw_include '@Storefront/storefront/component/form/form-input.html.twig' with {
+        label: 'brunko.company.ico'|trans|sw_sanitize,
+        id: idPrefix ~ prefix ~ '-brunko-ico',
+        name: prefix ~ '[customFields][brunko_ico]',
+        value: brunkoCf.brunko_ico ?? '',
+        autocomplete: 'off',
+        additionalClass: 'col-sm-6',
+    } %}
+    {% sw_include '@Storefront/storefront/component/form/form-input.html.twig' with {
+        label: 'brunko.company.dic'|trans|sw_sanitize,
+        id: idPrefix ~ prefix ~ '-brunko-dic',
+        name: prefix ~ '[customFields][brunko_dic]',
+        value: brunkoCf.brunko_dic ?? '',
+        autocomplete: 'off',
+        additionalClass: 'col-sm-6',
+    } %}
+{% endblock %}

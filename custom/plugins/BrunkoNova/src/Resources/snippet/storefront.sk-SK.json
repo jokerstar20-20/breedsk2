@@ -9,6 +9,10 @@
         "availability": {
             "many": "Skladom viac ako 50 ks",
             "exact": "Skladom %count% ks"
+        },
+        "company": {
+            "ico": "IČO",
+            "dic": "DIČ"
         }
     },
     "rhweb": {
@@ -48,5 +52,24 @@
             "quickview": "Rýchly náhľad",
             "imageSimilar": "Obrázok sa môže líšiť"
         }
+    },
+    "general": {
+        "privacyNoticeInformation": "Vezmite prosím na vedomie naše %privacyModalTagOpen%zásady ochrany osobných údajov%privacyModalTagClose% a %tosModalTagOpen%všeobecné obchodné podmienky%tosModalTagClose%."
+    },
+    "account": {
+        "privacyNoticeTextModal": "Nastavením hesla potvrdzujete, že ste si prečítali naše %privacyModalTagOpen%zásady ochrany osobných údajov%privacyModalTagClose% a akceptovali naše %tosModalTagOpen%všeobecné obchodné podmienky%tosModalTagClose%."
+    },
+    "checkout": {
+        "confirmTermsTextModal": "Prečítal som si a akceptujem %tosModalTagOpen%všeobecné obchodné podmienky%tosModalTagClose%.",
+        "confirmTermsReminderTextModal": "Už ste prijali %tosModalTagOpen%všeobecné obchodné podmienky%tosModalTagClose%.",
+        "confirmLegalGuaranteeNotice": "Vezmite prosím na vedomie %legalGuaranteeNoticeModalTagOpen%vaše práva zo zákonnej záruky%legalGuaranteeNoticeModalTagClose%.",
+        "autoConfirmTermsTextWithGuarantee": "Odoslaním objednávky akceptujete naše %tosModalTagOpen%všeobecné obchodné podmienky%tosModalTagClose%, %revocationModalTagOpen%storno podmienky%revocationModalTagClose% a berieme na vedomie %legalGuaranteeNoticeModalTagOpen%vaše práva zo zákonnej záruky%legalGuaranteeNoticeModalTagClose%."
+    },
+    "contact": {
+        "privacyNoticeTextModal": "Kliknutím na Pokračovať potvrdzujete, že ste si prečítali naše %privacyModalTagOpen%zásady ochrany osobných údajov%privacyModalTagClose%.",
+        "privacyNoticeInformation": "Vezmite prosím na vedomie naše %privacyModalTagOpen%zásady ochrany osobných údajov%privacyModalTagClose%."
+    },
+    "revocationRequest": {
+        "privacyNoticeTextModal": "Naše zásady ochrany osobných údajov nájdete %privacyModalTagOpen%tu%privacyModalTagClose%."
     }
 }

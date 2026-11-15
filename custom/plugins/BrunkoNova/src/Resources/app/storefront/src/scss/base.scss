@@ -303,3 +303,41 @@ body.rhweb-foundation .product-detail-configurator .product-detail-configurator-
         object-fit: cover;
     }
 }
+
+// --- Radio a checkbox: viditelny stav vyberu (cervena bodka / cerveny krizik) ---
+body.rhweb-foundation .form-check-input {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    border: 2px solid #6b7280 !important;
+    background-color: #fff !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    cursor: pointer;
+
+    &[type="radio"] {
+        border-radius: 50% !important;
+    }
+
+    &[type="checkbox"] {
+        border-radius: .25rem !important;
+    }
+
+    &[type="radio"]:checked {
+        border-color: #d9232d !important;
+        background-color: #fff !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2.4' fill='%23d9232d'/%3e%3c/svg%3e") !important;
+        background-size: 100% 100% !important;
+    }
+
+    &[type="checkbox"]:checked {
+        border-color: #d9232d !important;
+        background-color: #fff !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath d='M4 4l8 8M12 4l-8 8' stroke='%23d9232d' stroke-width='2.4' stroke-linecap='round' fill='none'/%3e%3c/svg%3e") !important;
+        background-size: 85% 85% !important;
+    }
+
+    &:focus {
+        box-shadow: 0 0 0 .2rem rgba(217, 35, 45, .2) !important;
+        border-color: #d9232d !important;
+    }
+}
