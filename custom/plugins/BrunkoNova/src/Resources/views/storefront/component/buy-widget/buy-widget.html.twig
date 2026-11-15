@@ -1,0 +1,18 @@
+{% sw_extends '@Storefront/storefront/component/buy-widget/buy-widget.html.twig' %}
+
+{# BrunkoNova: bez riadkov "Dostupné na sklade" a "Predaje" v parametroch (dostupnosť je v nákupnom boxe). #}
+{% block rhweb_foundation_buy_widget_available_stock %}{% endblock %}
+{% block rhweb_foundation_buy_widget_sales %}{% endblock %}
+
+{# Krátky popis pod dostupnosťou: prvých ~180 znakov popisu ako čistý text, ostrihané na celé slovo. #}
+{% block buy_widget_delivery_informations %}
+    {{ parent() }}
+
+    {% set brunkoShortText = (product.translated.description ?? '')|striptags|replace({'&nbsp;': ' '})|trim %}
+    {% if brunkoShortText %}
+        {% if brunkoShortText|length > 180 %}
+            {% set brunkoShortText = brunkoShortText|slice(0, 180)|split(' ')|slice(0, -1)|join(' ')|trim(' ,.;:-') ~ '…' %}
+        {% endif %}
+        <p class="brunko-short-description text-muted small mt-2 mb-3">{{ brunkoShortText }}</p>
+    {% endif %}
+{% endblock %}

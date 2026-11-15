@@ -10,5 +10,43 @@
             "many": "Skladom viac ako 50 ks",
             "exact": "Skladom %count% ks"
         }
+    },
+    "rhweb": {
+        "product": {
+            "specs": {
+                "manufacturer": "Výrobca",
+                "manufacturerNumber": "Číslo výrobcu",
+                "ean": "EAN",
+                "availableStock": "Skladom",
+                "sales": "Predaje",
+                "width": "Šírka",
+                "height": "Výška",
+                "length": "Hĺbka",
+                "weight": "Hmotnosť"
+            },
+            "tabs": {
+                "properties": {
+                    "title": "Vlastnosti"
+                },
+                "attachments": {
+                    "title": "Na stiahnutie"
+                },
+                "manufacturer": {
+                    "title": "Výrobca",
+                    "link": "Prejsť na výrobcu"
+                },
+                "paymentShipping": {
+                    "title": "Platba a doprava"
+                },
+                "bundles": {
+                    "title": "Výhodné balíčky"
+                }
+            },
+            "share": "Zdieľať produkt",
+            "shareVia": "Zdieľať cez %channel%",
+            "shareEmail": "E-mail",
+            "quickview": "Rýchly náhľad",
+            "imageSimilar": "Obrázok sa môže líšiť"
+        }
     }
 }
