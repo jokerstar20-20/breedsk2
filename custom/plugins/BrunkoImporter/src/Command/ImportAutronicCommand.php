@@ -396,6 +396,7 @@ class ImportAutronicCommand extends Command
             $stats['new'], $stats['changed'], $stats['same'], $stats['hidden'], $stats['failed'], $stats['groups']
         ));
         $this->logger->info('Brunko import autronic', $stats);
+        $this->reportEmptyCategories($io);
 
         return $stats['failed'] > 0 ? Command::FAILURE : Command::SUCCESS;
     }
@@ -1062,5 +1063,48 @@ class ImportAutronicCommand extends Command
         }
 
         return $id;
+    }
+
+    /**
+     * Kontrola po importe: kategorie v navigacii, v ktorych (ani v podkategoriach) nie je ziadny aktivny produkt.
+     * Len vypis, nic sa nemaze. Strom produktov sa dopocitava indexerom na pozadi, takze hned po importe moze
+     * ukazat aj kategorie, ktore sa za chvilu naplnia (pri pochybnosti spustite kontrolu znova po dobehnuti fronty).
+     */
+    protected function reportEmptyCategories(SymfonyStyle $io): void
+    {
+        $roots = $this->db->fetchFirstColumn('SELECT DISTINCT LOWER(HEX(navigation_category_id)) FROM sales_channel WHERE navigation_category_id IS NOT NULL');
+        if (!$roots) {
+            return;
+        }
+        $empty = [];
+        foreach ($roots as $root) {
+            $rows = $this->db->fetchAllAssociative(
+                "SELECT c.level, COALESCE(t.name, '(bez nazvu)') AS name
+                 FROM category c
+                 LEFT JOIN category_translation t ON t.category_id = c.id AND t.language_id = (SELECT language_id FROM sales_channel_domain LIMIT 1)
+                 WHERE c.path LIKE ? AND c.type IN ('page', 'product_list') AND c.active = 1
+                   AND NOT EXISTS (
+                       SELECT 1 FROM product_category_tree pt
+                       JOIN product p ON p.id = pt.product_id AND p.version_id = pt.product_version_id
+                       WHERE pt.category_id = c.id AND pt.category_version_id = c.version_id AND p.active = 1
+                   )
+                 ORDER BY c.level, name",
+                ['%|' . $root . '|%']
+            );
+            foreach ($rows as $r) {
+                $empty[] = $r['name'];
+            }
+        }
+        if (!$empty) {
+            $io->writeln('Kontrola kategorii: ziadna prazdna kategoria.');
+
+            return;
+        }
+        $io->warning(sprintf('Prazdne kategorie (bez aktivneho produktu): %d', count($empty)));
+        $io->listing(array_slice($empty, 0, 50));
+        if (count($empty) > 50) {
+            $io->writeln(sprintf('... a dalsich %d', count($empty) - 50));
+        }
+        $this->logger->warning('Brunko import: prazdne kategorie', ['count' => count($empty), 'names' => array_slice($empty, 0, 50)]);
     }
 }
