@@ -1,0 +1,44 @@
+{# BrunkoNova: dostupnosť bez presných čísel. Do 19 ks presný počet, od 20 ks "Skladom viac ako 50 ks". #}
+{% sw_extends '@RHWebFoundation/storefront/rhweb-foundation/component/product/availability.html.twig' %}
+
+{% block rhweb_foundation_product_availability %}
+    {% set brunkoMany = 20 %}
+    {% if product.available and product.type != constant('Shopware\\Core\\Content\\Product\\ProductDefinition::TYPE_DIGITAL') and product.availableStock >= 1 %}
+        {% set soldOut = false %}
+        {% set className = 'availability' %}
+        {% set rhwebWithoutStock = false %}
+        {% if product.availableStock >= brunkoMany %}
+            {% set type = 'success' %}
+            {% set content = 'brunko.availability.many'|trans|sw_sanitize %}
+        {% else %}
+            {% set type = 'warning' %}
+            {% set content = 'brunko.availability.exact'|trans({'%count%': product.availableStock})|sw_sanitize %}
+        {% endif %}
+
+        {% block rhweb_foundation_product_availability_badge %}
+            {% if product.childCount == 0 and layout == 'badge' %}
+                {% sw_include '@RHWebFoundation/storefront/rhweb-foundation/utilities/badge.html.twig' with {
+                    type: type,
+                    className: className,
+                    content: content
+                } %}
+            {% endif %}
+        {% endblock %}
+
+        {% block rhweb_foundation_product_availability_status %}
+            {% if layout == 'status' %}
+                <link itemprop="{{ className }}" href="https://schema.org/InStock">
+                <div class="rhweb-product-delivery-information">
+                    <p class="delivery-information delivery-{{ className }}"{% if showText == 'hover' %} data-bs-toggle="tooltip" data-bs-title="{{ content }}"{% endif %}>
+                        <span class="delivery-status-indicator bg-{{ type }}"></span>
+                        {% if showText != 'hover' %}
+                            {{ content }}
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        {% endblock %}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

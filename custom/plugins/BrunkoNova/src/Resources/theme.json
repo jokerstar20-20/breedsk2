@@ -5,8 +5,8 @@
     "views": [
         "@Storefront",
         "@RHWebThemeNova",
-        "@BrunkoNova",
-        "@Plugins"
+        "@Plugins",
+        "@BrunkoNova"
     ],
     "style": [
         "app/storefront/src/scss/overrides.scss",

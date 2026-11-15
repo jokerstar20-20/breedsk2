@@ -6,6 +6,10 @@
             "unavailable": "Nicht verfügbar",
             "promoBadge": "Aktion",
             "addToCart": "In den Warenkorb"
+        },
+        "availability": {
+            "many": "Auf Lager, mehr als 50 Stk.",
+            "exact": "Auf Lager: %count% Stk."
         }
     }
 }

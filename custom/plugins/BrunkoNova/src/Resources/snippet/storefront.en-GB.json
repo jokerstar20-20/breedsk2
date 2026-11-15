@@ -6,6 +6,10 @@
             "unavailable": "Unavailable",
             "promoBadge": "Sale",
             "addToCart": "Add to cart"
+        },
+        "availability": {
+            "many": "In stock, more than 50 pcs",
+            "exact": "In stock: %count% pcs"
         }
     }
 }
