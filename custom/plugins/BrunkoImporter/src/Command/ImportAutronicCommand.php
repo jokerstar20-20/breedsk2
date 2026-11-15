@@ -31,6 +31,7 @@ class ImportAutronicCommand extends Command
     private const PROPERTY_PARAMS = ['Farba primárna', 'Materiál', 'Štýl'];
     /** Vlastnost, podla ktorej sa robia varianty (feed: ColorVariants). */
     private const VARIANT_PARAM = 'Farba primárna';
+    private const SIZE_PARAM = 'Veľkosť';
     private const BATCH = 200;
     private const MANUFACTURER = 'Autronic';
 
@@ -276,6 +277,7 @@ class ImportAutronicCommand extends Command
         foreach ($groups as $g) {
             $codes = $g['codes'];
             $colors = $g['colors'];
+            $sizes = $g['sizes'] ?? [];
             $members = [];
             foreach ($codes as $c) {
                 $members[$c] = $items[$c];
@@ -284,7 +286,7 @@ class ImportAutronicCommand extends Command
 
             $parentId = $this->parentId($codes);
             $parentNumber = $this->parentNumber($codes, $parentId);
-            $parentName = $this->parentName($members, $colors, $parentNumber);
+            $parentName = $this->parentName($members, $colors, $parentNumber, (bool) $sizes);
             $parentKey = 'PARENT:' . $parentId;
             $seenParents[$parentKey] = true;
             $stats['groups']++;
@@ -296,10 +298,11 @@ class ImportAutronicCommand extends Command
             // (hlavny produkt je vtedy neaktivny).
             $inStock = array_filter($members, fn (array $m): bool => $m['stock'] >= $m['min_qty']);
             $settingColors = $inStock ? array_intersect_key($colors, $inStock) : $colors;
+            $settingSizes = array_values(array_unique($sizes ? ($inStock ? array_intersect_key($sizes, $inStock) : $sizes) : []));
 
             $memberHashes = [];
             foreach ($members as $c => $m) {
-                $memberHashes[$c] = md5(json_encode($this->hashBase($m), JSON_UNESCAPED_UNICODE) . $parentId . ':settings2');
+                $memberHashes[$c] = md5(json_encode($this->hashBase($m), JSON_UNESCAPED_UNICODE) . $parentId . ':settings2' . ($sizes[$c] ?? ''));
             }
             $mediaMarks = [];
             foreach ($settingColors as $color) {
@@ -308,7 +311,7 @@ class ImportAutronicCommand extends Command
                     $mediaMarks[$oid] = $this->optionMedia()[$oid];
                 }
             }
-            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $mediaMarks, 'nm3'], JSON_UNESCAPED_UNICODE));
+            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $sizes, $mediaMarks, 'nm4'], JSON_UNESCAPED_UNICODE));
             $parentIsNew = !isset($state[$parentKey]);
             $allSame = !$parentIsNew && $state[$parentKey]['hash'] === $groupHash;
             foreach ($codes as $c) {
@@ -322,7 +325,7 @@ class ImportAutronicCommand extends Command
             }
 
             $catId = $this->categoryId($first, $dry);
-            $parentRow = $this->buildParent($parentId, $parentNumber, $parentName, $members, $settingColors, $catId, $taxId, $systemLang, $skLang, $sc['id'], $parentIsNew);
+            $parentRow = $this->buildParent($parentId, $parentNumber, $parentName, $members, $settingColors, $settingSizes, $catId, $taxId, $systemLang, $skLang, $sc['id'], $parentIsNew);
             $parentIsNew ? $stats['new']++ : $stats['changed']++;
             $batchMeta[count($batch)] = ['code' => $parentKey, 'pid' => $parentId, 'hash' => $groupHash];
             $batch[] = $parentRow; // hlavny produkt musi byt v davke pred variantmi
@@ -333,6 +336,9 @@ class ImportAutronicCommand extends Command
                     fn (string $color): string => md5('brunko:po:' . self::VARIANT_PARAM . ':' . mb_strtolower(PropertyMap::normalizeValue(self::VARIANT_PARAM, $color))),
                     array_values($settingColors)
                 );
+                foreach ($settingSizes as $size) {
+                    $keepIds[] = md5('brunko:po:' . self::SIZE_PARAM . ':' . mb_strtolower($size));
+                }
                 $this->db->executeStatement(
                     'DELETE FROM product_configurator_setting WHERE product_id = UNHEX(?) AND property_group_option_id NOT IN (' . implode(',', array_fill(0, count($keepIds), 'UNHEX(?)')) . ')',
                     array_merge([$parentId], $keepIds)
@@ -347,6 +353,9 @@ class ImportAutronicCommand extends Command
                 $this->cleanLinks($row['id'], $isNew, $dry);
                 $row['parentId'] = $parentId;
                 $row['options'] = [$this->optionRow(self::VARIANT_PARAM, $colors[$c], $systemLang, $skLang)];
+                if (!empty($sizes[$c])) {
+                    $row['options'][] = $this->optionRow(self::SIZE_PARAM, $sizes[$c], $systemLang, $skLang);
+                }
                 $batchMeta[count($batch)] = ['code' => $c, 'pid' => $row['id'], 'hash' => $memberHashes[$c]];
                 $batch[] = $row;
             }
@@ -512,6 +521,9 @@ class ImportAutronicCommand extends Command
         if (($type = PropertyMap::displayType($param)) !== null) {
             $group['displayType'] = $type;
         }
+        if ($param === self::SIZE_PARAM) {
+            $group['sortingType'] = 'position';
+        }
 
         $option = [
             'id' => md5('brunko:po:' . $param . ':' . mb_strtolower($value)),
@@ -520,6 +532,9 @@ class ImportAutronicCommand extends Command
         ];
         if (($hex = PropertyMap::colorHex($param, $value)) !== null) {
             $option['colorHexCode'] = $hex;
+        }
+        if ($param === self::SIZE_PARAM) {
+            $option['position'] = ColorShades::sizePosition($value);
         }
 
         return $option;
@@ -581,12 +596,30 @@ class ImportAutronicCommand extends Command
                 $colors[$c] = $color;
             }
 
-            $lower = array_map('mb_strtolower', $colors);
-            if (in_array('', $lower, true) || count(array_unique($lower)) !== count($lower)) {
+            // druha os: velkost / priemer z pripony kodu (len ak sa medzi clenmi lisi)
+            $sizes = [];
+            foreach ($component as $c) {
+                $sizes[$c] = (string) ($items[$c]['size'] ?? '');
+            }
+            $distinct = array_unique($sizes);
+            if (count($distinct) === 1 && reset($distinct) !== '') {
+                $sizes = []; // vsetci rovnaka velkost => os nema zmysel
+            } elseif (count($distinct) > 1 && in_array('', $sizes, true)) {
+                $io->warning(sprintf('Skupina %s sa nezoskupuje (cast produktov nema velkost).', implode(', ', $component)));
+                continue;
+            } elseif (count($distinct) === 1) {
+                $sizes = [];
+            }
+
+            $keys = [];
+            foreach ($colors as $c => $col) {
+                $keys[$c] = mb_strtolower($col) . '|' . ($sizes[$c] ?? '');
+            }
+            if (in_array('', array_map('mb_strtolower', $colors), true) || count(array_unique($keys)) !== count($keys)) {
                 $io->warning(sprintf('Skupina %s sa nezoskupuje (chybajuca alebo opakujuca sa farba), ostanu samostatne produkty.', implode(', ', $component)));
                 continue;
             }
-            $groups[] = ['codes' => $component, 'colors' => $colors];
+            $groups[] = ['codes' => $component, 'colors' => $colors, 'sizes' => $sizes];
         }
 
         return $groups;
@@ -631,10 +664,11 @@ class ImportAutronicCommand extends Command
     }
 
     /** Nazov hlavneho produktu: nazov prveho clena bez farby a s cislom modelu namiesto kodu variantu. */
-    private function parentName(array $members, array $colors, string $parentNumber): string
+    private function parentName(array $members, array $colors, string $parentNumber, bool $hasSizes = false): string
     {
         $first = reset($members);
-        $parts = array_map('trim', explode(',', $first['name']));
+        $fullName = $hasSizes ? preg_replace('/\s*\d+(?:[.,]\d+)?(?:\s*[x×]\s*\d+(?:[.,]\d+)?)+\s*cm\b/iu', '', $first['name']) : $first['name'];
+        $parts = array_map('trim', explode(',', $fullName));
         if (count($parts) < 2) {
             return $first['name'];
         }
@@ -643,9 +677,17 @@ class ImportAutronicCommand extends Command
             $l = mb_strtolower($color);
             $stems[] = mb_substr($l, 0, max(4, mb_strlen($l) - 2));
         }
+        $generic = array_map(fn (string $n): string => mb_substr(mb_strtolower($n), 0, max(3, mb_strlen($n) - 2)), ColorShades::allNames());
         $out = [];
-        foreach ($parts as $part) {
+        foreach ($parts as $i => $part) {
             $l = mb_strtolower($part);
+            if ($i > 0 && mb_substr_count($part, ' ') <= 1) {
+                foreach ($generic as $stem) {
+                    if (str_starts_with($l, $stem)) {
+                        continue 2; // segment s farbou z feedu (napr. "hnedá" pri variante inej farby)
+                    }
+                }
+            }
             if (isset($members[$part])) {
                 $out[] = $parentNumber; // segment s kodom variantu
                 continue;
@@ -668,7 +710,7 @@ class ImportAutronicCommand extends Command
      * @param array<string,array<string,mixed>> $members
      * @param array<string,string> $colors
      */
-    private function buildParent(string $parentId, string $parentNumber, string $parentName, array $members, array $colors, string $catId, string $taxId, string $systemLang, string $skLang, string $scId, bool $isNew): array
+    private function buildParent(string $parentId, string $parentNumber, string $parentName, array $members, array $colors, array $sizes, string $catId, string $taxId, string $systemLang, string $skLang, string $scId, bool $isNew): array
     {
         $first = reset($members);
         $stock = 0;
@@ -703,7 +745,16 @@ class ImportAutronicCommand extends Command
         $tr = ['name' => $this->displayName($parentName, $parentNumber), 'description' => $desc];
 
         $settings = [];
+        foreach ($sizes as $size) {
+            $opt = $this->optionRow(self::SIZE_PARAM, $size, $systemLang, $skLang);
+            $settings[] = ['id' => md5('brunko:cs:' . $parentId . ':' . $opt['id']), 'option' => $opt];
+        }
+        $seenColor = [];
         foreach ($colors as $color) {
+            if (isset($seenColor[mb_strtolower($color)])) {
+                continue;
+            }
+            $seenColor[mb_strtolower($color)] = true;
             $opt = $this->optionRow(self::VARIANT_PARAM, $color, $systemLang, $skLang);
             $setting = ['id' => md5('brunko:cs:' . $parentId . ':' . $opt['id']), 'option' => $opt];
             // Farba bez hex kodu, ale s obrazkom (napr. "Viacfarebna"): obrazok sa zobrazi v kruzku namiesto textu
@@ -735,11 +786,18 @@ class ImportAutronicCommand extends Command
             'variantListingConfig' => [
                 'displayParent' => false,
                 'mainVariantId' => $mainVariantId,
-                'configuratorGroupConfig' => [[
-                    'id' => md5('brunko:pg:' . self::VARIANT_PARAM),
-                    'representation' => 'box',
-                    'expressionForListings' => false,
-                ]],
+                'configuratorGroupConfig' => array_merge(
+                    [[
+                        'id' => md5('brunko:pg:' . self::VARIANT_PARAM),
+                        'representation' => 'box',
+                        'expressionForListings' => false,
+                    ]],
+                    $sizes ? [[
+                        'id' => md5('brunko:pg:' . self::SIZE_PARAM),
+                        'representation' => 'box',
+                        'expressionForListings' => false,
+                    ]] : []
+                ),
             ],
             'configuratorSettings' => $settings,
         ];
@@ -857,12 +915,16 @@ class ImportAutronicCommand extends Command
             foreach ($component as $code) {
                 $cv[$code] = $refined[$code] ?? ($own[$code] !== '' ? $own[$code] : ($ref[$code] ?? ''));
             }
-            // ak su dve farby v skupine rovnake (napr. OAK a DUB), rozlisi ich pripona kodu
+            // ak su dve farby (pri rovnakej velkosti) v skupine rovnake (napr. OAK a DUB), rozlisi ich pripona kodu
             $names = $cv;
-            foreach (array_count_values(array_map('mb_strtolower', $cv)) as $name => $n) {
+            $keys = [];
+            foreach ($cv as $code => $v) {
+                $keys[$code] = mb_strtolower($v) . '|' . ColorShades::sizeOf((string) $code);
+            }
+            foreach (array_count_values($keys) as $key => $n) {
                 if ($n > 1) {
                     foreach ($cv as $code => $v) {
-                        if (mb_strtolower($v) === $name) {
+                        if ($keys[$code] === $key) {
                             $names[$code] = $v . ' (' . ColorShades::suffix((string) $code) . ')';
                         }
                     }
@@ -875,6 +937,7 @@ class ImportAutronicCommand extends Command
 
         // 2. prechod: polozky s upravenymi farbami
         foreach ($this->reader->read($file) as $p) {
+            $p['size'] = ColorShades::sizeOf((string) $p['code']);
             if ($refined) {
                 foreach ($p['color_variants'] ?? [] as $code => $colour) {
                     if (isset($refined[$code])) {

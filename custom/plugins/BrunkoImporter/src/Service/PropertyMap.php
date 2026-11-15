@@ -14,6 +14,7 @@ final class PropertyMap
     /** Parameter z feedu => nazov skupiny v e-shope a typ zobrazenia. */
     private const GROUPS = [
         'Farba primárna' => ['label' => 'Farba', 'displayType' => 'color'],
+        'Veľkosť' => ['label' => 'Veľkosť', 'displayType' => 'text'],
     ];
 
     /** Farba (male pismena, slovensky) => hex. Neznama farba sa zobrazi ako text. */
