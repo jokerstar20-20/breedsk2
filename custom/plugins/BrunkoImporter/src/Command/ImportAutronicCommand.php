@@ -796,15 +796,49 @@ class ImportAutronicCommand extends Command
      */
     protected function readItems(string $file): iterable
     {
-        // 1. prechod: len male udaje o skupinach, aby sa pamat nezvysovala
-        $groups = [];
+        // 1. prechod: len male udaje (kod, farba, odkazy), aby sa pamat nezvysovala
+        $own = [];   // kod => farba produktu
+        $ref = [];   // kod => farba z odkazu v inom produkte
+        $adj = [];
         foreach ($this->reader->read($file) as $p) {
-            if (count($p['color_variants'] ?? []) > 1) {
-                $groups[implode('|', array_keys($p['color_variants']))] = $p['color_variants'];
+            $c = (string) $p['code'];
+            $own[$c] = trim((string) ($p['color'] ?? ''));
+            foreach (($p['color_variants'] ?? []) as $other => $colour) {
+                $other = (string) $other;
+                if ($colour !== '') {
+                    $ref[$other] ??= $colour;
+                }
+                if ($other !== $c) {
+                    $adj[$c][$other] = true;
+                    $adj[$other][$c] = true;
+                }
             }
         }
         $refined = []; // kod => spresnena farba
-        foreach ($groups as $cv) {
+        $seen = [];
+        foreach (array_keys($adj) as $start) {
+            if (isset($seen[$start])) {
+                continue;
+            }
+            $component = [];
+            $queue = [(string) $start];
+            $seen[$start] = true;
+            while ($queue) {
+                $cur = array_shift($queue);
+                if (isset($own[$cur])) {
+                    $component[] = $cur;
+                }
+                foreach (array_keys($adj[$cur] ?? []) as $next) {
+                    if (!isset($seen[$next])) {
+                        $seen[$next] = true;
+                        $queue[] = (string) $next;
+                    }
+                }
+            }
+            $cv = [];
+            foreach ($component as $code) {
+                $cv[$code] = $own[$code] !== '' ? $own[$code] : ($ref[$code] ?? '');
+            }
             $lower = array_map('mb_strtolower', $cv);
             $dups = array_filter(array_count_values($lower), fn (int $n): bool => $n > 1);
             if (!$dups) {
@@ -819,7 +853,7 @@ class ImportAutronicCommand extends Command
                 if ($n > 1) {
                     foreach ($names as $code => $v) {
                         if (mb_strtolower($v) === $name) {
-                            $names[$code] = $cv[$code] . ' (' . ColorShades::suffix((string) $code) . ')';
+                            $names[$code] = $v . ' (' . ColorShades::suffix((string) $code) . ')';
                         }
                     }
                 }
@@ -833,8 +867,8 @@ class ImportAutronicCommand extends Command
 
         // 2. prechod: polozky s upravenymi farbami
         foreach ($this->reader->read($file) as $p) {
-            if ($refined && !empty($p['color_variants'])) {
-                foreach ($p['color_variants'] as $code => $colour) {
+            if ($refined) {
+                foreach ($p['color_variants'] ?? [] as $code => $colour) {
                     if (isset($refined[$code])) {
                         $p['color_variants'][$code] = $refined[$code];
                     }

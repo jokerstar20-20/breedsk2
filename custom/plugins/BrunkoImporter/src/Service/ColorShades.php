@@ -15,6 +15,9 @@ final class ColorShades
         'BK' => 'Čierna', 'WT' => 'Biela', 'BR' => 'Hnedá', 'BRN' => 'Hnedá', 'BGE' => 'Béžová', 'BEI' => 'Béžová',
         'GRN' => 'Zelená', 'BLUE' => 'Modrá', 'YEL' => 'Žltá', 'PINK' => 'Ružová', 'RED' => 'Červená',
         'ORA' => 'Oranžová', 'PUR' => 'Fialová', 'NAT' => 'Prírodná',
+        'OAK' => 'Dub', 'DUB' => 'Dub', 'OLW' => 'Staré drevo', 'WAL' => 'Orech', 'ART' => 'Artisan',
+        'WOT' => 'Wotan', 'SON' => 'Sonoma', 'COF' => 'Kávová', 'BUK' => 'Buk', 'TRV' => 'Čerešňa',
+        'CSM' => 'Kašmírová', 'ELM' => 'Jilm', 'CR' => 'Chróm',
     ];
 
     /** Pismena + cislo => nazov (odtiene, ktore poznáme). */
@@ -40,7 +43,7 @@ final class ColorShades
         if (preg_match('/^([A-Z]+)(\d*)/', $suffix, $m) && isset(self::TOKENS[$m[1]])) {
             $name = self::TOKENS[$m[1]];
 
-            return in_array($m[2], ['', '1', '2'], true) ? $name : $name . ' ' . $m[2];
+            return $m[2] === '' || $m[2] === '1' ? $name : $name . ' ' . $m[2];
         }
 
         return $feedColour . ' (' . $suffix . ')';
