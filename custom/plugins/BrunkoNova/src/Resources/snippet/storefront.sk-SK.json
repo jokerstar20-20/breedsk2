@@ -9,6 +9,26 @@
         "availability": {
             "many": "Skladom viac ako 50 ks",
             "exact": "Skladom %count% ks"
+        },
+        "footer": {
+            "benefits": {
+                "delivery": {
+                    "title": "Rýchle dodanie",
+                    "text": "Poštovné zadarmo nad 150 €"
+                },
+                "service": {
+                    "title": "Zákaznícky servis",
+                    "text": "V čase od 9:00 do 15:00"
+                },
+                "payment": {
+                    "title": "Platby",
+                    "text": "Bezpečná platba kartou"
+                },
+                "returns": {
+                    "title": "Vrátenie tovaru",
+                    "text": "Možnosť vrátenia do 14 dní"
+                }
+            }
         }
     },
     "rhweb": {

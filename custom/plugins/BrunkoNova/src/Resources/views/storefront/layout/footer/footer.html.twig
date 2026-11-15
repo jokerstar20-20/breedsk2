@@ -1,0 +1,25 @@
+{% sw_extends '@Storefront/storefront/layout/footer/footer.html.twig' %}
+
+{# Pasik s vyhodami nad patou #}
+{% block layout_footer_inner_container %}
+    <div class="brunko-benefits">
+        <div class="container">
+            <div class="row text-center">
+                {% set brunkoBenefits = [
+                    { icon: 'truck', title: 'brunko.footer.benefits.delivery.title', text: 'brunko.footer.benefits.delivery.text' },
+                    { icon: 'headset', title: 'brunko.footer.benefits.service.title', text: 'brunko.footer.benefits.service.text' },
+                    { icon: 'card', title: 'brunko.footer.benefits.payment.title', text: 'brunko.footer.benefits.payment.text' },
+                    { icon: 'return', title: 'brunko.footer.benefits.returns.title', text: 'brunko.footer.benefits.returns.text' }
+                ] %}
+                {% for b in brunkoBenefits %}
+                    <div class="col-6 col-md-3 brunko-benefit">
+                        <span class="brunko-benefit-icon brunko-benefit-icon-{{ b.icon }}"></span>
+                        <strong class="brunko-benefit-title">{{ b.title|trans|striptags }}</strong>
+                        <span class="brunko-benefit-text">{{ b.text|trans|striptags }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {{ parent() }}
+{% endblock %}

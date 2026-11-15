@@ -381,3 +381,18 @@ body.rhweb-foundation .navigation-flyout-link.is-level-0 {
     font-weight: 700 !important;
     color: #000 !important;
 }
+
+/* Pasik s vyhodami nad patou */
+.brunko-benefits{padding:2rem 0 1.5rem;border-bottom:1px solid #e5e7eb;}
+.brunko-benefit{display:flex;flex-direction:column;align-items:center;gap:.25rem;margin-bottom:.75rem;}
+.brunko-benefit-icon{width:60px;height:60px;border:1px solid #6b7280;border-radius:50%;background-repeat:no-repeat;background-position:center;background-size:32px;margin-bottom:.5rem;}
+.brunko-benefit-title{font-size:.9rem;color:#000;}
+.brunko-benefit-text{font-size:.75rem;color:#6b7280;}
+.brunko-benefit-icon-truck{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 6h11v10H2zM13 9h4l3 3v4h-7z'/%3E%3Ccircle cx='6' cy='17.5' r='1.7'/%3E%3Ccircle cx='16.5' cy='17.5' r='1.7'/%3E%3C/svg%3E");}
+.brunko-benefit-icon-headset{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 14v-2a8 8 0 0116 0v2'/%3E%3Crect x='3' y='13' width='4' height='6' rx='1.5'/%3E%3Crect x='17' y='13' width='4' height='6' rx='1.5'/%3E%3Cpath d='M19 19c0 2-3 2-7 2'/%3E%3C/svg%3E");}
+.brunko-benefit-icon-card{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='18' height='12' rx='2'/%3E%3Cpath d='M3 10h18M6 15h4'/%3E%3C/svg%3E");}
+.brunko-benefit-icon-return{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12a8 8 0 108-8H7'/%3E%3Cpath d='M10 1L7 4l3 3'/%3E%3C/svg%3E");}
+
+/* Stlpce paty: nadpisy tucne, texty bez odkazu v sivej */
+body.rhweb-foundation .footer-column-headline{font-weight:700;color:#000;}
+body.rhweb-foundation .footer-link-item div{color:#6b7280;}
