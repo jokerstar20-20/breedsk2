@@ -219,7 +219,7 @@ class ImportImagesCommand extends Command
         $ext = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?: '', PATHINFO_EXTENSION)) ?: 'jpg';
         $name = trim(strtolower((string) preg_replace('/[^a-z0-9]+/i', '-', $code)), '-') . '-' . substr(md5($url), 0, 8);
 
-        $mediaFile = $this->fetcher->fetchFromURL($url, $name, $ext);
+        $mediaFile = $this->fetcher->fetchFromURL(str_replace(' ', '%20', $url), $name, $ext); // Kondela ma v URL medzery
         try {
             $this->saver->persistFileToMedia($mediaFile, $name, $mediaId, $ctx);
         } finally {
