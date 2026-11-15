@@ -17,6 +17,11 @@ final class ColorShades
         'OAK' => 'Dub', 'DUB' => 'Dub', 'OLW' => 'Staré drevo', 'WAL' => 'Orech', 'ART' => 'Artisan',
         'WOT' => 'Wotan', 'SON' => 'Sonoma', 'COF' => 'Kávová', 'BUK' => 'Buk', 'TRV' => 'Čerešňa',
         'CSM' => 'Kašmírová', 'ELM' => 'Jilm', 'CR' => 'Chróm',
+        'COP' => 'Medená', 'OR' => 'Oranžová', 'GOLD' => 'Zlatá', 'BOR' => 'Bordová', 'LILA' => 'Fialová',
+        'SAL' => 'Lososová', 'WH' => 'Biela', 'WHITE' => 'Biela', 'ANT' => 'Antracitová', 'RUBY' => 'Rubínová',
+        'CHAM' => 'Šampanská', 'TER' => 'Terakota', 'HONEY' => 'Medová', 'RUST' => 'Hrdzavá', 'MENT' => 'Mentolová',
+        'CLEAR' => 'Číra', 'COFFEE' => 'Kávová', 'ZELENA' => 'Zelená', 'SILVER' => 'Strieborná', 'CREAM' => 'Krémová',
+        'BG' => 'Béžová',
     ];
 
     /** Pripona kodu za poslednou medzerou ("TV-915 GREY2" => "GREY2"). */
@@ -27,8 +32,16 @@ final class ColorShades
         return strtoupper($pos === false ? $code : substr($code, $pos + 1));
     }
 
+    /** Farba z jednej casti pripony ("CRM2" => "Krémová 2"), alebo null. */
+    private static function part(string $part): ?string
+    {
+        return preg_match('/^([A-Z]+)(\d*)$/', $part, $m) && isset(self::TOKENS[$m[1]])
+            ? self::TOKENS[$m[1]] . ($m[2] === '' ? '' : ' ' . $m[2])
+            : null;
+    }
+
     /**
-     * Nazov farby podla pripony kodu: CRM => Krémová, CRM2 => Krémová 2, CRM3 => Krémová 3.
+     * Nazov farby podla pripony kodu: CRM => Krémová, CRM2 => Krémová 2, GREY-DK => Sivá DK, GRN-WT => Zelená / Biela.
      * Null, ak kod nema priponu so znamou skratkou farby.
      */
     public static function name(string $code): ?string
@@ -36,10 +49,15 @@ final class ColorShades
         if (!str_contains($code, ' ')) {
             return null;
         }
-        if (preg_match('/^([A-Z]+)(\d*)$/', self::suffix($code), $m) && isset(self::TOKENS[$m[1]])) {
-            return $m[2] === '' ? self::TOKENS[$m[1]] : self::TOKENS[$m[1]] . ' ' . $m[2];
+        $parts = explode('-', trim(self::suffix($code), '()'));
+        $name = self::part((string) array_shift($parts));
+        if ($name === null) {
+            return null;
+        }
+        foreach ($parts as $part) {
+            $name .= ($second = self::part($part)) !== null ? ' / ' . $second : ' ' . $part; // L, M, S, DK, LT, PEARL ...
         }
 
-        return null;
+        return $name;
     }
 }

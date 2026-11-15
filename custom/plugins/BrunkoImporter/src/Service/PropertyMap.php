@@ -46,6 +46,13 @@ final class PropertyMap
         'lanýžová' => '#b8a58a',
         'kapučínová' => '#a67b5b',
         'dub' => '#b8935a',
+        'lososová' => '#fa8072',
+        'rubínová' => '#9b111e',
+        'šampanská' => '#f7e7ce',
+        'terakota' => '#c1613e',
+        'medová' => '#d9a441',
+        'hrdzavá' => '#b7410e',
+        'mentolová' => '#a8e6cf',
         'staré drevo' => '#8a6f55',
         'artisan' => '#a98c68',
         'wotan' => '#9c8468',
@@ -59,6 +66,7 @@ final class PropertyMap
         'orech' => '#6b4a32',
         'číra' => '#e8f1f5',
         'priehľadná' => '#e8f1f5',
+        'transparentná' => '#e8f1f5',
     ];
 
     /** Zobrazovany nazov skupiny. */
@@ -99,10 +107,16 @@ final class PropertyMap
         return $canonical !== null ? self::COLORS[$canonical] : null;
     }
 
-    /** "Krémová 2" => ["Krémová", " 2"] (cislo odtiena sa pri hex kode ignoruje). */
+    /** "Sivá DK" => ["Sivá", " DK"], "Zelená / Biela" => ["Zelená", " / Biela"] (odtien/velkost sa pri hex kode ignoruje). */
     private static function splitNumber(string $value): array
     {
-        return preg_match('/^(.*\S)\s+(\d+)$/u', trim($value), $m) ? [$m[1], ' ' . $m[2]] : [trim($value), ''];
+        $v = trim($value);
+        $base = ($pos = mb_strpos($v, ' / ')) !== false ? mb_substr($v, 0, $pos) : $v;
+        while (preg_match('/^(.*\S)\s+(\d+|[A-Z]{1,6}|\([^)]*\))$/u', $base, $m)) {
+            $base = $m[1];
+        }
+
+        return [$base, mb_substr($v, mb_strlen($base))];
     }
 
     /** Kluc v COLORS pre hodnotu (presne, alebo bez ohladu na rod: prirodne/prirodny/prirodna). */
