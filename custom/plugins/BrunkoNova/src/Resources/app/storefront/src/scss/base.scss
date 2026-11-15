@@ -374,3 +374,10 @@ body.rhweb-foundation .category-navigation-box {
 body.rhweb-foundation .header-main {
     background-color: #fffaf2 !important;
 }
+
+/* Hlavne kategorie (horne menu a nadpisy stlpcov vo flyout) - tucne a cierne */
+body.rhweb-foundation .main-navigation-link,
+body.rhweb-foundation .navigation-flyout-link.is-level-0 {
+    font-weight: 700 !important;
+    color: #000 !important;
+}
