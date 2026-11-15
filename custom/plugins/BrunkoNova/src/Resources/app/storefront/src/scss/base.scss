@@ -341,3 +341,12 @@ body.rhweb-foundation .form-check-input {
         border-color: #d9232d !important;
     }
 }
+
+// --- Preloader (prepnutie dopravy/platby v pokladni): svetly polopriehladny podklad namiesto celej cernej obrazovky ---
+body.rhweb-foundation .rhweb-preloader:before {
+    background-color: rgba(255, 255, 255, .72) !important;
+}
+
+body.rhweb-foundation .rhweb-preloader .rhweb-preloader-inner.ldr {
+    --uib-color: #d9232d !important;
+}
