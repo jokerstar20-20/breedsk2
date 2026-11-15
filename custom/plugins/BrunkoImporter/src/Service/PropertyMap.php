@@ -14,6 +14,8 @@ final class PropertyMap
     /** Parameter z feedu => nazov skupiny v e-shope a typ zobrazenia. */
     private const GROUPS = [
         'Farba primárna' => ['label' => 'Farba', 'displayType' => 'color'],
+        // farba v konfiguratore variantov (Zelená 2, Zelená 3 ...): rovnaky nazov ako Farba, ale nefiltruje sa
+        'Farba variantu' => ['label' => 'Farba', 'displayType' => 'color'],
         'Veľkosť' => ['label' => 'Veľkosť', 'displayType' => 'text'],
     ];
 
@@ -95,6 +97,24 @@ final class PropertyMap
         $canonical = self::canonicalColor($base);
 
         return $canonical !== null ? mb_strtoupper(mb_substr($canonical, 0, 1)) . mb_substr($canonical, 1) . $num : $value;
+    }
+
+    /**
+     * Zakladne farby pre filter: "Zelená 2" => ["Zelená"], "Sivá DK" => ["Sivá"], "Zelená / Biela" => ["Zelená", "Biela"].
+     *
+     * @return list<string>
+     */
+    public static function baseColors(string $value): array
+    {
+        $out = [];
+        foreach (explode(' / ', trim($value)) as $part) {
+            $base = self::splitNumber($part)[0];
+            if ($base !== '') {
+                $out[mb_strtolower($base)] = $base;
+            }
+        }
+
+        return array_values($out);
     }
 
     /** Hex kod farby pre hodnotu, ak je skupina farebna a farbu poznáme. */

@@ -30,7 +30,8 @@ class ImportAutronicCommand extends Command
     /** Parametre z feedu, z ktorych vzniknu vlastnosti (filtre v storefronte). */
     private const PROPERTY_PARAMS = ['Farba primárna', 'Materiál', 'Štýl'];
     /** Vlastnost, podla ktorej sa robia varianty (feed: ColorVariants). */
-    private const VARIANT_PARAM = 'Farba primárna';
+    private const VARIANT_PARAM = 'Farba variantu'; // farba v konfiguratore (Zelená 2); nefiltruje sa
+    private const FILTER_PARAM = 'Farba primárna';  // zakladna farba (Zelená) pre filter a vlastnosti produktu
     private const SIZE_PARAM = 'Veľkosť';
     private const BATCH = 200;
     private const MANUFACTURER = 'Autronic';
@@ -207,7 +208,7 @@ class ImportAutronicCommand extends Command
         foreach ($items as $p) {
             foreach (self::PROPERTY_PARAMS as $param) {
                 $values = [$p['params'][$param]['value'] ?? ''];
-                if ($param === self::VARIANT_PARAM) {
+                if ($param === self::FILTER_PARAM) {
                     $values = array_merge($values, array_values($p['color_variants'] ?? []));
                 }
                 foreach ($values as $v) {
@@ -307,11 +308,11 @@ class ImportAutronicCommand extends Command
             $mediaMarks = [];
             foreach ($settingColors as $color) {
                 $oid = md5('brunko:po:' . self::VARIANT_PARAM . ':' . mb_strtolower(PropertyMap::normalizeValue(self::VARIANT_PARAM, $color)));
-                if (isset($this->optionMedia()[$oid])) {
-                    $mediaMarks[$oid] = $this->optionMedia()[$oid];
+                if (($mid = $this->colorMedia($color)) !== null) {
+                    $mediaMarks[$oid] = $mid;
                 }
             }
-            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $sizes, $mediaMarks, 'nm4'], JSON_UNESCAPED_UNICODE));
+            $groupHash = md5(json_encode([$parentNumber, $parentName, $memberHashes, $colors, $sizes, $mediaMarks, 'nm5'], JSON_UNESCAPED_UNICODE));
             $parentIsNew = !isset($state[$parentKey]);
             $allSame = !$parentIsNew && $state[$parentKey]['hash'] === $groupHash;
             foreach ($codes as $c) {
@@ -452,7 +453,9 @@ class ImportAutronicCommand extends Command
             if ($v === '') {
                 continue;
             }
-            $props[] = $this->optionRow($param, $v, $systemLang, $skLang);
+            foreach ($param === self::FILTER_PARAM ? PropertyMap::baseColors($v) : [$v] as $value) {
+                $props[] = $this->optionRow($param, $value, $systemLang, $skLang);
+            }
         }
         if ($props) {
             $row['properties'] = $props;
@@ -498,7 +501,7 @@ class ImportAutronicCommand extends Command
     {
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
-        $p['_mf'] = 4; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
+        $p['_mf'] = 5; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
         if ($hasColor) {
             $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
@@ -523,6 +526,9 @@ class ImportAutronicCommand extends Command
         }
         if ($param === self::SIZE_PARAM) {
             $group['sortingType'] = 'position';
+        }
+        if ($param === self::VARIANT_PARAM) {
+            $group['filterable'] = false;
         }
 
         $option = [
@@ -758,7 +764,7 @@ class ImportAutronicCommand extends Command
             $opt = $this->optionRow(self::VARIANT_PARAM, $color, $systemLang, $skLang);
             $setting = ['id' => md5('brunko:cs:' . $parentId . ':' . $opt['id']), 'option' => $opt];
             // Farba bez hex kodu, ale s obrazkom (napr. "Viacfarebna"): obrazok sa zobrazi v kruzku namiesto textu
-            $mediaId = $this->optionMedia()[$opt['id']] ?? null;
+            $mediaId = $this->colorMedia($color);
             if ($mediaId !== null && empty($opt['colorHexCode'])) {
                 $setting['mediaId'] = $mediaId;
             }
@@ -986,6 +992,15 @@ class ImportAutronicCommand extends Command
     }
 
     /** @return array<string,string> */
+    /** Obrazok farby (napr. Viacfarebna) je nastaveny na zakladnej farbe vo filtri; pouzije sa aj v konfiguratore variantov. */
+    private function colorMedia(string $color): ?string
+    {
+        $base = PropertyMap::baseColors($color)[0] ?? $color;
+        $id = md5('brunko:po:' . self::FILTER_PARAM . ':' . mb_strtolower(PropertyMap::normalizeValue(self::FILTER_PARAM, $base)));
+
+        return $this->optionMedia()[$id] ?? null;
+    }
+
     private function optionMedia(): array
     {
         if ($this->optionMedia === null) {
