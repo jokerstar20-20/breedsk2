@@ -5,6 +5,7 @@ namespace Brunko\Importer\Command;
 use Brunko\Importer\Feed\AutronicFeedReader;
 use Brunko\Importer\Feed\FeedDownloader;
 use Brunko\Importer\Service\CategoryResolver;
+use Brunko\Importer\Service\ColorShades;
 use Brunko\Importer\Service\PropertyMap;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
@@ -787,10 +788,64 @@ class ImportAutronicCommand extends Command
         return $this->feeds->resolve($file, $noDownload, $io);
     }
 
-    /** @return iterable<array<string,mixed>> */
+    /**
+     * Polozky feedu. Ak sa v skupine farebnych variantov opakuje nazov farby (TV-915 GREY2 a SIL2 su obe "Siva"),
+     * pozna sa rozdiel z pripony kodu (GREY2 = svetlosiva, SIL = strieborna ...) a farba sa pre tie varianty spresni.
+     *
+     * @return iterable<array<string,mixed>>
+     */
     protected function readItems(string $file): iterable
     {
-        return $this->reader->read($file);
+        // 1. prechod: len male udaje o skupinach, aby sa pamat nezvysovala
+        $groups = [];
+        foreach ($this->reader->read($file) as $p) {
+            if (count($p['color_variants'] ?? []) > 1) {
+                $groups[implode('|', array_keys($p['color_variants']))] = $p['color_variants'];
+            }
+        }
+        $refined = []; // kod => spresnena farba
+        foreach ($groups as $cv) {
+            $lower = array_map('mb_strtolower', $cv);
+            $dups = array_filter(array_count_values($lower), fn (int $n): bool => $n > 1);
+            if (!$dups) {
+                continue;
+            }
+            $names = [];
+            foreach ($cv as $code => $colour) {
+                $names[$code] = isset($dups[mb_strtolower($colour)]) ? ColorShades::refine((string) $code, $colour) : $colour;
+            }
+            // ani po spresneni nesmu byt dve rovnake => pripona kodu v zatvorke
+            foreach (array_count_values(array_map('mb_strtolower', $names)) as $name => $n) {
+                if ($n > 1) {
+                    foreach ($names as $code => $v) {
+                        if (mb_strtolower($v) === $name) {
+                            $names[$code] = $cv[$code] . ' (' . ColorShades::suffix((string) $code) . ')';
+                        }
+                    }
+                }
+            }
+            foreach ($names as $code => $name) {
+                if ($name !== $cv[$code]) {
+                    $refined[$code] = $name;
+                }
+            }
+        }
+
+        // 2. prechod: polozky s upravenymi farbami
+        foreach ($this->reader->read($file) as $p) {
+            if ($refined && !empty($p['color_variants'])) {
+                foreach ($p['color_variants'] as $code => $colour) {
+                    if (isset($refined[$code])) {
+                        $p['color_variants'][$code] = $refined[$code];
+                    }
+                }
+                if (isset($refined[$p['code']])) {
+                    $p['color'] = $refined[$p['code']];
+                    $p['params']['Farba primárna']['value'] = $refined[$p['code']];
+                }
+            }
+            yield $p;
+        }
     }
 
     /** Kategoria produktu: Autronic kod => cesta v spolocnom strome (strom Kondela), vid category_map_autronic.php. */

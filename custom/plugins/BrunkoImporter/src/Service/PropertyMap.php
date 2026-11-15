@@ -41,6 +41,10 @@ final class PropertyMap
         'medená' => '#b87333',
         'bronzová' => '#cd7f32',
         'prírodná' => '#D0A67D', // natural (drevo)
+        'svetlosivá' => '#c4c4c4',
+        'tmavosivá' => '#555555',
+        'lanýžová' => '#b8a58a',
+        'kapučínová' => '#a67b5b',
         'dub' => '#b8935a',
         'orech' => '#6b4a32',
         'číra' => '#e8f1f5',
