@@ -1,0 +1,6 @@
+{% sw_extends '@RHWebFoundation/storefront/rhweb-foundation/component/account/register-own-field.html.twig' %}
+
+{# BrunkoNova: firemné polia (IČO, DIČ, IČ DPH) sa zobrazujú len pri type účtu "Firemný" (rovnaký prepínač ako pole Firma). #}
+{% if rhwebField.name in ['ico', 'dic', 'icdph'] %}
+    {% set rhwebClass = rhwebClass ~ ' js-field-toggle-contact-type-company d-none' %}
+{% endif %}

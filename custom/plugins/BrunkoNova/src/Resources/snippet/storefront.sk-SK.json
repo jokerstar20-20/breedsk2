@@ -9,10 +9,6 @@
         "availability": {
             "many": "Skladom viac ako 50 ks",
             "exact": "Skladom %count% ks"
-        },
-        "company": {
-            "ico": "IČO",
-            "dic": "DIČ"
         }
     },
     "rhweb": {
@@ -51,6 +47,19 @@
             "shareEmail": "E-mail",
             "quickview": "Rýchly náhľad",
             "imageSimilar": "Obrázok sa môže líšiť"
+        },
+        "foundation": {
+            "form": {
+                "ico": {
+                    "label": "IČO"
+                },
+                "dic": {
+                    "label": "DIČ"
+                },
+                "icdph": {
+                    "label": "IČ DPH"
+                }
+            }
         }
     },
     "general": {
