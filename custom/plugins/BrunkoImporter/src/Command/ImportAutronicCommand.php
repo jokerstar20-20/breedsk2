@@ -24,7 +24,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 #[AsCommand(name: 'brunko:import:autronic', description: 'Import produktov z feedu Autronic (ceny, sklad, kategorie)')]
 class ImportAutronicCommand extends Command
 {
-    private const SUPPLIER = 'autronic';
     /** Kategorie, ktorych kod zacina tymto prefixom, zatial preskakujeme. */
     private const SKIP_PREFIXES = ['DE-'];
     /** Parametre z feedu, z ktorych vzniknu vlastnosti (filtre v storefronte). */
@@ -42,9 +41,9 @@ class ImportAutronicCommand extends Command
 
     public function __construct(
         private readonly AutronicFeedReader $reader,
-        private readonly FeedDownloader $feeds,
-        private readonly CategoryResolver $categories,
-        private readonly Connection $db,
+        protected readonly FeedDownloader $feeds,
+        protected readonly CategoryResolver $categories,
+        protected readonly Connection $db,
         private readonly EntityRepository $productRepository,
         private readonly EntityRepository $taxRepository,
         private readonly EntityRepository $manufacturerRepository,
@@ -62,16 +61,18 @@ class ImportAutronicCommand extends Command
             ->addOption('force', null, InputOption::VALUE_NONE, 'Ignoruj poistku proti prazdnemu/neuplnemu feedu');
     }
 
+    protected ?SymfonyStyle $io = null;
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = $this->io = new SymfonyStyle($input, $output);
         $dry = (bool) $input->getOption('dry-run');
         $limit = $input->getOption('limit') !== null ? (int) $input->getOption('limit') : null;
         $started = microtime(true);
 
         // --- 1. feed (var/feeds/autronic.xml; stiahne sa len ak nie je --file / --no-download) ---
         try {
-            $file = $this->feeds->resolve($input->getOption('file'), (bool) $input->getOption('no-download'), $io);
+            $file = $this->resolveFeed($input->getOption('file'), (bool) $input->getOption('no-download'), $io);
         } catch (\RuntimeException $e) {
             $io->error($e->getMessage());
 
@@ -89,7 +90,7 @@ class ImportAutronicCommand extends Command
         $dupes = 0;
         $noPrice = 0;
         $named = 0;
-        foreach ($this->reader->read($file) as $p) {
+        foreach ($this->readItems($file) as $p) {
             if ($p['code'] === '' || $p['cat_code'] === '') {
                 continue;
             }
@@ -99,7 +100,7 @@ class ImportAutronicCommand extends Command
                 continue;
             }
             if ($p['name'] === '') {
-                $named++; // nazov sa zostavi pri zapise: "Autronic + kod"
+                $named++; // nazov sa zostavi pri zapise: "<vyrobca> + kod"
             }
             foreach (self::SKIP_PREFIXES as $prefix) {
                 if (str_starts_with($p['cat_code'], $prefix)) {
@@ -128,7 +129,7 @@ class ImportAutronicCommand extends Command
 
         // --- 3. poistka ---
         $state = [];
-        foreach ($this->db->fetchAllAssociative('SELECT code, LOWER(HEX(product_id)) AS pid, hash FROM brunko_import_state WHERE supplier = ?', [self::SUPPLIER]) as $r) {
+        foreach ($this->db->fetchAllAssociative('SELECT code, LOWER(HEX(product_id)) AS pid, hash FROM brunko_import_state WHERE supplier = ?', [$this->supplier()]) as $r) {
             $state[$r['code']] = $r;
         }
         if (!$items) {
@@ -191,7 +192,7 @@ class ImportAutronicCommand extends Command
                     $this->db->executeStatement(
                         'INSERT INTO brunko_import_state (supplier, code, product_id, hash, updated_at) VALUES (?, ?, UNHEX(?), ?, ?)
                          ON DUPLICATE KEY UPDATE product_id = VALUES(product_id), hash = VALUES(hash), updated_at = VALUES(updated_at)',
-                        [self::SUPPLIER, $m['code'], $m['pid'], $m['hash'], $now]
+                        [$this->supplier(), $m['code'], $m['pid'], $m['hash'], $now]
                     );
                 }
             }
@@ -241,7 +242,7 @@ class ImportAutronicCommand extends Command
         $wasChild = array_fill_keys($this->db->fetchFirstColumn(
             'SELECT s.code FROM brunko_import_state s INNER JOIN product p ON p.id = s.product_id AND p.version_id = UNHEX(?)
              WHERE s.supplier = ? AND p.parent_id IS NOT NULL AND s.code NOT LIKE ?',
-            [Defaults::LIVE_VERSION, self::SUPPLIER, 'PARENT:%']
+            [Defaults::LIVE_VERSION, $this->supplier(), 'PARENT:%']
         ), true);
 
         foreach ($items as $code => $p) {
@@ -257,7 +258,7 @@ class ImportAutronicCommand extends Command
             }
             $isNew ? $stats['new']++ : $stats['changed']++;
 
-            $catId = $this->categories->ensure($p['cat_code'], $p['cat_name'], $dry);
+            $catId = $this->categoryId($p, $dry);
             $row = $this->buildProduct($p, $catId, $taxId, $systemLang, $skLang, $sc['id'], $isNew);
             if ($detach) {
                 $row['parentId'] = null;
@@ -318,7 +319,7 @@ class ImportAutronicCommand extends Command
                 continue;
             }
 
-            $catId = $this->categories->ensure($first['cat_code'], $first['cat_name'], $dry);
+            $catId = $this->categoryId($first, $dry);
             $parentRow = $this->buildParent($parentId, $parentNumber, $parentName, $members, $settingColors, $catId, $taxId, $systemLang, $skLang, $sc['id'], $parentIsNew);
             $parentIsNew ? $stats['new']++ : $stats['changed']++;
             $batchMeta[count($batch)] = ['code' => $parentKey, 'pid' => $parentId, 'hash' => $groupHash];
@@ -339,7 +340,7 @@ class ImportAutronicCommand extends Command
             foreach ($members as $c => $m) {
                 $isNew = !isset($state[$c]);
                 $isNew ? $stats['new']++ : $stats['changed']++;
-                $mCat = $this->categories->ensure($m['cat_code'], $m['cat_name'], $dry);
+                $mCat = $this->categoryId($m, $dry);
                 $row = $this->buildProduct($m, $mCat, $taxId, $systemLang, $skLang, $sc['id'], $isNew);
                 $row['parentId'] = $parentId;
                 $row['options'] = [$this->optionRow(self::VARIANT_PARAM, $colors[$c], $systemLang, $skLang)];
@@ -351,6 +352,10 @@ class ImportAutronicCommand extends Command
             }
         }
         $flush();
+
+        if (!$dry) {
+            $this->retireLegacyCategories();
+        }
 
         // --- 6. produkty, ktore zo feedu zmizli, skryjeme ---
         if ($limit === null) {
@@ -388,7 +393,7 @@ class ImportAutronicCommand extends Command
         $vatFactor = 1 + $p['vat'] / 100;
         $price = $this->priceStruct($p);
 
-        $id = md5('brunko:product:' . self::SUPPLIER . ':' . $p['code']);
+        $id = md5('brunko:product:' . $this->supplier() . ':' . $p['code']);
         $name = $this->displayName($p['name'], $p['code']);
         $desc = $p['desc_html'] ?? ($p['desc_text'] !== null ? nl2br(htmlspecialchars($p['desc_text'])) : null);
         $tr = ['name' => $name, 'description' => $desc];
@@ -471,7 +476,7 @@ class ImportAutronicCommand extends Command
     {
         $hasColor = ($p['color'] ?? '') !== '';
         unset($p['color'], $p['color_variants']);
-        $p['_mf'] = 2; // (2 = tvar nazvu "Autronic KOD nazov")   // vyrobca Autronic => jednorazovo prepise existujuce produkty
+        $p['_mf'] = 3; // (3 = vyrobca, tvar nazvu, spolocny strom kategorii)   // vyrobca Autronic => jednorazovo prepise existujuce produkty
         if ($hasColor) {
             $p['_map'] = 4; // parovanie farby (nazov skupiny, farebne kruzky) => jednorazovo prepise produkty s farbou
         }
@@ -583,12 +588,15 @@ class ImportAutronicCommand extends Command
             [ArrayParameterType::STRING, ParameterType::STRING]
         );
 
-        return $existing ?: md5('brunko:parent:' . self::SUPPLIER . ':' . $codes[0]);
+        return $existing ?: md5('brunko:parent:' . $this->supplier() . ':' . $codes[0]);
     }
 
     /** Cislo hlavneho produktu = spolocny zaciatok kodov (80001-01 BK + 80001-01 WT => 80001-01). */
     private function parentNumber(array $codes, string $parentId): string
     {
+        if (!$this->commonPrefixParentNumber()) {
+            return $codes[0] . '-M';
+        }
         $prefix = $codes[0];
         foreach ($codes as $c) {
             while ($prefix !== '' && !str_starts_with($c, $prefix)) {
@@ -676,7 +684,7 @@ class ImportAutronicCommand extends Command
 
             return [$availA, $effA, $a['code']] <=> [$availB, $effB, $b['code']];
         });
-        $mainVariantId = md5('brunko:product:' . self::SUPPLIER . ':' . array_key_first($ranked));
+        $mainVariantId = md5('brunko:product:' . $this->supplier() . ':' . array_key_first($ranked));
 
         $desc = $first['desc_html'] ?? ($first['desc_text'] !== null ? nl2br(htmlspecialchars($first['desc_text'])) : null);
         $tr = ['name' => $this->displayName($parentName, $parentNumber), 'description' => $desc];
@@ -735,17 +743,86 @@ class ImportAutronicCommand extends Command
     }
 
     /**
+     * Pôvodný strom kategórií podľa kódov Autronicu (BD, BD-BO, NA-KRE ...) nahradil spoločný strom. Odpoja sa z neho produkty
+     * (upsert pridá novú kategóriu, ale starú neodoberie) a kategórie sa deaktivujú. Produkty ani kategórie sa nemažú.
+     */
+    protected function retireLegacyCategories(): void
+    {
+        $map = require __DIR__ . '/../Resources/config/category_map_autronic.php';
+        $ids = [];
+        foreach (array_keys($map) as $code) {
+            $path = '';
+            foreach (explode('-', $code) as $part) {
+                $path = $path === '' ? $part : $path . '-' . $part;
+                $ids[CategoryResolver::idFor($path)] = true;
+            }
+        }
+        $in = implode(',', array_fill(0, count($ids), 'UNHEX(?)'));
+        $params = array_keys($ids);
+        $this->db->executeStatement('DELETE FROM product_category WHERE category_id IN (' . $in . ')', $params);
+        $this->db->executeStatement('DELETE FROM product_category_tree WHERE category_id IN (' . $in . ')', $params);
+        $this->db->executeStatement('UPDATE category SET active = 0 WHERE id IN (' . $in . ')', $params);
+    }
+
+    // ---- body, v ktorych sa dodavatelia lisia (ImportKondelaCommand ich prepisuje) ----
+
+    protected function supplier(): string
+    {
+        return 'autronic';
+    }
+
+    protected function manufacturerName(): string
+    {
+        return 'Autronic';
+    }
+
+    /** Cislo hlavneho produktu zo spolocneho zaciatku kodov (Autronic: 80001-01 BK + WT => 80001-01). */
+    protected function commonPrefixParentNumber(): bool
+    {
+        return true;
+    }
+
+    protected function resolveFeed(?string $file, bool $noDownload, SymfonyStyle $io): string
+    {
+        return $this->feeds->resolve($file, $noDownload, $io);
+    }
+
+    /** @return iterable<array<string,mixed>> */
+    protected function readItems(string $file): iterable
+    {
+        return $this->reader->read($file);
+    }
+
+    /** Kategoria produktu: Autronic kod => cesta v spolocnom strome (strom Kondela), vid category_map_autronic.php. */
+    protected function categoryId(array $p, bool $dry): string
+    {
+        static $map = null;
+        $map ??= require __DIR__ . '/../Resources/config/category_map_autronic.php';
+
+        $path = $map[$p['cat_code']] ?? null;
+        if ($path === null) {
+            return $this->categories->ensure($p['cat_code'], $p['cat_name'], $dry); // nezmapovane (DE-*): strom podla kodu
+        }
+        if (in_array($p['cat_code'], ['BD-VES-KOV', 'BD-VES-MAS'], true)) {
+            $text = mb_strtolower($p['name'] . ' ' . ($p['desc_text'] ?? '') . ' ' . strip_tags((string) ($p['desc_html'] ?? '')));
+            $path = 'Predsieň a chodba > Vešiaky > ' . (str_contains($text, 'stojan') ? 'Stojanové vešiaky' : 'Vešiaky na stenu');
+        }
+
+        return $this->categories->ensurePath($path, $dry);
+    }
+
+    /**
      * Nazov v e-shope: "Autronic KOD Typ, material". Feed uvadza kod na konci nazvu ("Zrkadlo, zrkadlo, AZR-V5015"),
      * ten sa z nazvu vyhodi (je uz na zaciatku). Bez nazvu vo feede ostane len "Autronic KOD".
      */
-    private function displayName(string $name, string $code): string
+    protected function displayName(string $name, string $code): string
     {
         $parts = array_filter(
             array_map('trim', explode(',', $name)),
             fn (string $part): bool => $part !== '' && mb_strtolower($part) !== mb_strtolower($code)
         );
 
-        return trim(self::MANUFACTURER . ' ' . $code . ' ' . implode(', ', $parts));
+        return trim($this->manufacturerName() . ' ' . $code . ' ' . implode(', ', $parts));
     }
 
     /** @return array<string,string> */
@@ -767,16 +844,16 @@ class ImportAutronicCommand extends Command
         $existing = $this->db->fetchOne(
             'SELECT LOWER(HEX(m.id)) FROM product_manufacturer m INNER JOIN product_manufacturer_translation t ON t.product_manufacturer_id = m.id
              WHERE t.name = ? AND m.version_id = UNHEX(?) LIMIT 1',
-            [self::MANUFACTURER, Defaults::LIVE_VERSION]
+            [$this->manufacturerName(), Defaults::LIVE_VERSION]
         );
         if ($existing) {
             return $existing;
         }
-        $id = md5('brunko:manufacturer:' . self::SUPPLIER);
+        $id = md5('brunko:manufacturer:' . $this->supplier());
         if (!$dry) {
             $this->manufacturerRepository->upsert([[
                 'id' => $id,
-                'translations' => [$systemLang => ['name' => self::MANUFACTURER], $skLang => ['name' => self::MANUFACTURER]],
+                'translations' => [$systemLang => ['name' => $this->manufacturerName()], $skLang => ['name' => $this->manufacturerName()]],
             ]], Context::createDefaultContext());
         }
 

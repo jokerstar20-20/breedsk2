@@ -5,6 +5,8 @@
     <services>
         <service id="Brunko\Importer\Feed\AutronicFeedReader"/>
 
+        <service id="Brunko\Importer\Feed\KondelaFeedReader"/>
+
         <service id="Brunko\Importer\Feed\FeedDownloader">
             <argument>%kernel.project_dir%</argument>
         </service>
@@ -21,6 +23,19 @@
 
         <service id="Brunko\Importer\Command\ImportAutronicCommand">
             <argument type="service" id="Brunko\Importer\Feed\AutronicFeedReader"/>
+            <argument type="service" id="Brunko\Importer\Feed\FeedDownloader"/>
+            <argument type="service" id="Brunko\Importer\Service\CategoryResolver"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="product.repository"/>
+            <argument type="service" id="tax.repository"/>
+            <argument type="service" id="product_manufacturer.repository"/>
+            <argument type="service" id="logger"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Brunko\Importer\Command\ImportKondelaCommand">
+            <argument type="service" id="Brunko\Importer\Feed\AutronicFeedReader"/>
+            <argument type="service" id="Brunko\Importer\Feed\KondelaFeedReader"/>
             <argument type="service" id="Brunko\Importer\Feed\FeedDownloader"/>
             <argument type="service" id="Brunko\Importer\Service\CategoryResolver"/>
             <argument type="service" id="Doctrine\DBAL\Connection"/>

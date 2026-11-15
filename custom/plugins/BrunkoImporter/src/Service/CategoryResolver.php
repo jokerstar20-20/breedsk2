@@ -44,6 +44,41 @@ class CategoryResolver
         return md5('brunko:cat:' . $code);
     }
 
+    /**
+     * Spolocny strom kategorii (strom Kondela): cesta "Obyvacka > Pohovky". ID z cesty, takze viac dodavatelov
+     * dostane tie iste kategorie. Existujuce sa neprepisuju, vytvaraju sa len chybajuce.
+     */
+    public function ensurePath(string $path, bool $dryRun = false): string
+    {
+        $parentId = $this->rootId;
+        $acc = '';
+        $toCreate = [];
+        foreach (array_map('trim', explode('>', $path)) as $name) {
+            $acc = $acc === '' ? $name : $acc . ' > ' . $name;
+            $id = md5('brunko:cat:path:' . mb_strtolower($acc));
+            if (!isset($this->existing[$id])) {
+                $toCreate[] = [
+                    'id' => $id,
+                    'parentId' => $parentId,
+                    'active' => true,
+                    'visible' => true,
+                    'type' => 'page',
+                    'translations' => [
+                        $this->systemId => ['name' => $name],
+                        $this->skId => ['name' => $name],
+                    ],
+                ];
+                $this->existing[$id] = true;
+            }
+            $parentId = $id;
+        }
+        if ($toCreate && !$dryRun) {
+            $this->categoryRepository->create($toCreate, Context::createDefaultContext());
+        }
+
+        return $parentId;
+    }
+
     /** Zaisti existenciu cele cesty a vrati id listovej kategorie. */
     public function ensure(string $code, string $leafName, bool $dryRun = false): string
     {
