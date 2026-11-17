@@ -447,3 +447,6 @@ body.rhweb-foundation .product-box .product-info .product-price-info{margin-top:
   body .product-box .product-price-wrapper{text-align:center;}
   body .product-box .product-price-wrapper .product-cheapest-price{display:flex;justify-content:center;}
 }
+
+/* Detail produktu: vyrobca vpravo hore sa nezobrazuje */
+.cms-element-manufacturer-logo{display:none !important;}

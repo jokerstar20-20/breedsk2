@@ -486,18 +486,20 @@ class ImportAutronicCommand extends Command
     private function priceStruct(array $p): array
     {
         $vatFactor = 1 + $p['vat'] / 100;
-        $sale = $p['retail_promo'] > 0 && $p['retail_promo'] < $p['retail'] ? $p['retail_promo'] : $p['retail'];
+        // Konecne ceny s DPH sa zaokruhluju na desatiny (11,79 -> 11,80), bez stotin centov.
+        $retail = round((float) $p['retail'], 1);
+        $sale = $p['retail_promo'] > 0 && $p['retail_promo'] < $p['retail'] ? round((float) $p['retail_promo'], 1) : $retail;
         $price = [
             'currencyId' => Defaults::CURRENCY,
             'gross' => $sale,
             'net' => round($sale / $vatFactor, 4),
             'linked' => true,
         ];
-        if ($sale < $p['retail']) {
+        if ($sale < $retail) {
             $price['listPrice'] = [
                 'currencyId' => Defaults::CURRENCY,
-                'gross' => $p['retail'],
-                'net' => round($p['retail'] / $vatFactor, 4),
+                'gross' => $retail,
+                'net' => round($retail / $vatFactor, 4),
                 'linked' => true,
             ];
         }
