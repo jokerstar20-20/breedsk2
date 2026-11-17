@@ -1,0 +1,18 @@
+{
+    "name": "brunko/checkout",
+    "description": "BrunkoCheckout - poplatok za dobierku a zlava pri platbe vopred",
+    "version": "v1.0.0",
+    "license": "proprietary",
+    "authors": [{"name": "Brunko"}],
+    "require": {"shopware/core": "6.7.*"},
+    "type": "shopware-platform-plugin",
+    "autoload": {"psr-4": {"Brunko\\Checkout\\": "src/"}},
+    "extra": {
+        "shopware-plugin-class": "Brunko\\Checkout\\BrunkoCheckout",
+        "label": {"de-DE": "BrunkoCheckout", "en-GB": "BrunkoCheckout", "sk-SK": "BrunkoCheckout"},
+        "description": {
+            "en-GB": "Cash on delivery fee and discount for prepayment",
+            "sk-SK": "Poplatok za dobierku a zľava pri platbe vopred"
+        }
+    }
+}

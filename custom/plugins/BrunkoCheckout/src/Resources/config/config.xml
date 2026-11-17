@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
+    <card>
+        <title>Platby</title>
+        <title lang="sk-SK">Platby</title>
+        <input-field type="float">
+            <name>codFee</name>
+            <label>Cash on delivery fee (gross, EUR)</label>
+            <label lang="sk-SK">Poplatok za dobierku (s DPH, EUR)</label>
+            <defaultValue>2.9</defaultValue>
+        </input-field>
+        <input-field type="float">
+            <name>codFeeTaxRate</name>
+            <label>VAT rate of the fee (%)</label>
+            <label lang="sk-SK">Sadzba DPH poplatku (%)</label>
+            <defaultValue>23</defaultValue>
+        </input-field>
+        <input-field type="float">
+            <name>prepaymentDiscountPercent</name>
+            <label>Discount for prepayment (% of goods)</label>
+            <label lang="sk-SK">Zľava pri platbe vopred (% z tovaru)</label>
+            <defaultValue>1</defaultValue>
+        </input-field>
+    </card>
+</config>
