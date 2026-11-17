@@ -27,6 +27,13 @@ class BuildHomepageCommand extends Command
     private const STOREFRONT_TYPE = '8a243080f92e4c719546314b577cf82b';
     private const TILES = 8;
 
+    /** Obrazok dlazdice kategorie = cover produktu s tymto cislom (inak prvy produkt kategorie). */
+    private const TILE_IMAGE_PRODUCT = [
+        'Kuchyňa a Jedáleň' => 'ASE-1040',   // jedalensky set: stol so stolickami
+        'Spálňa' => '0000397543',            // manzelska postel SHEILA
+        'Bytové doplnky' => 'PRN2019',       // piknikovy kos
+    ];
+
     public function __construct(
         private readonly Connection $db,
         private readonly EntityRepository $cmsPageRepository,
@@ -135,7 +142,14 @@ class BuildHomepageCommand extends Command
         $this->categoryRepository->update([['id' => $navId, 'cmsPageId' => $pageId]], $ctx);
 
         $io->success('Layout "Úvodná stránka" vytvoreny a priradeny vstupnej kategorii.');
-        $io->writeln('Dalej: bin/console cache:clear a cache:clear:http (a theme:compile, ak sa menil scss).');
+
+        // Aby sa zmena hned prejavila (aj pri nocnom importe), vycisti HTTP cache.
+        try {
+            $this->getApplication()?->find('cache:clear:http')->run(new \Symfony\Component\Console\Input\ArrayInput([]), new \Symfony\Component\Console\Output\NullOutput());
+            $io->writeln('HTTP cache vycistena.');
+        } catch (\Throwable $e) {
+            $io->warning('HTTP cache sa nepodarilo vycistit: ' . $e->getMessage() . ' (pusti rucne bin/console cache:clear:http)');
+        }
         return Command::SUCCESS;
     }
 
@@ -309,7 +323,14 @@ class BuildHomepageCommand extends Command
                 "SELECT seo_path_info FROM seo_url WHERE foreign_key = UNHEX(?) AND route_name = 'frontend.navigation.page' AND is_canonical = 1 AND is_deleted = 0 AND sales_channel_id = UNHEX(?) AND language_id = UNHEX(?) LIMIT 1",
                 [$r['id'], $scId, self::SK_LANGUAGE]
             );
-            $mediaId = $this->db->fetchOne(
+            $mediaId = false;
+            if (isset(self::TILE_IMAGE_PRODUCT[(string) $r['name']])) {
+                $mediaId = $this->db->fetchOne(
+                    'SELECT LOWER(HEX(pm.media_id)) FROM product p JOIN product_media pm ON pm.id = p.product_media_id AND pm.version_id = p.product_media_version_id WHERE p.product_number = ? LIMIT 1',
+                    [self::TILE_IMAGE_PRODUCT[(string) $r['name']]]
+                );
+            }
+            $mediaId = $mediaId ?: $this->db->fetchOne(
                 'SELECT LOWER(HEX(pm.media_id)) FROM product_category_tree pc
                    JOIN product p ON p.id = pc.product_id AND p.version_id = pc.product_version_id
                    JOIN product_media pm ON pm.id = p.product_media_id AND pm.version_id = p.product_media_version_id
