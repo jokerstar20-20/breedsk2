@@ -74,6 +74,11 @@ class BuildHomepageCommand extends Command
         $heroSection = md5('brunko:home:section:hero');
         $mainSection = md5('brunko:home:section:main');
 
+        $deals = $this->pickDiscounted();
+        $io->section('Akciove produkty (' . \count($deals) . ')');
+        foreach ($deals as $d) {
+            $io->writeln(sprintf('  %-22s -%s %%  %s', $d['number'], $d['pct'], $d['name']));
+        }
         $first = $tiles[0];
         $sections = [
             [
@@ -85,8 +90,9 @@ class BuildHomepageCommand extends Command
                 'blocks' => [
                     $this->htmlBlock('benefits', 0, $this->benefitsHtml()),
                     $this->htmlBlock('categories', 1, $this->categoriesHtml($tiles)),
-                    $this->sliderBlock('novinky', 2, $streamId, 'Novinky v ponuke'),
-                    $this->htmlBlock('about', 3, $this->aboutHtml()),
+                    ...($deals ? [$this->sliderBlock('akcie', 2, 'static', array_column($deals, 'id'), 'Akciové produkty')] : []),
+                    $this->sliderBlock('novinky', 3, 'product_stream', $streamId, 'Novinky v ponuke'),
+                    $this->htmlBlock('about', 4, $this->aboutHtml()),
                 ],
             ],
         ];
@@ -111,7 +117,7 @@ class BuildHomepageCommand extends Command
         ];
 
         $io->section('Layout');
-        $io->writeln(sprintf('cms_page %s: 2 sekcie, 5 blokov (hero, vyhody, kategorie, slider Novinky, o obchode)', $pageId));
+        $io->writeln(sprintf('cms_page %s: 2 sekcie, hero, vyhody, kategorie, slider Akciove, slider Novinky, o obchode', $pageId));
         $io->writeln('product_stream ' . $streamId . ' (active=1, parentId IS NULL; radenie createdAt DESC, limit 12)');
         $io->writeln(sprintf('Pocet produktov v kategorii (pred): %d', $this->countProducts($navId)));
 
@@ -151,10 +157,10 @@ class BuildHomepageCommand extends Command
     }
 
     /** @return array<string,mixed> */
-    private function sliderBlock(string $key, int $pos, string $streamId, string $title): array
+    private function sliderBlock(string $key, int $pos, string $source, string|array $value, string $title): array
     {
         $cfg = [
-            'products' => ['source' => 'product_stream', 'value' => $streamId],
+            'products' => ['source' => $source, 'value' => $value],
             'title' => ['source' => 'static', 'value' => $title],
             'displayMode' => ['source' => 'static', 'value' => 'standard'],
             'boxLayout' => ['source' => 'static', 'value' => 'standard'],
@@ -229,6 +235,44 @@ class BuildHomepageCommand extends Command
             . '  <p>breed.sk je internetový obchod s nábytkom a bytovými doplnkami pre celú domácnosť. V ponuke nájdete tisíce produktov pre kuchyňu, obývačku, spálňu, kanceláriu aj záhradu. '
             . 'Tovar odosielame zo skladu a doručujeme kuriérom, platiť môžete aj na dobierku.</p>' . "\n"
             . '</section>';
+    }
+
+    /**
+     * 12 aktivnych dostupnych hlavnych produktov s najvyssou zlavou (listPrice), s obrazkom; max 2 z jednej kategorie najvyssej urovne.
+     * Vyber je staticky (listPrice sa v product streame filtrovat neda), obnovi ho opakovane spustenie prikazu.
+     *
+     * @return list<array{id:string,number:string,name:string,pct:string}>
+     */
+    private function pickDiscounted(): array
+    {
+        $pctPath = '$.c' . Defaults::CURRENCY . '.percentage.gross';
+        $rows = $this->db->fetchAllAssociative(
+            "SELECT LOWER(HEX(p.id)) id, p.product_number number, pt.name name,
+                    CAST(JSON_UNQUOTE(JSON_EXTRACT(p.price, ?)) AS DECIMAL(6,2)) pct,
+                    (SELECT LOWER(HEX(c.parent_id)) FROM product_category_tree pc JOIN category c ON c.id = pc.category_id
+                      WHERE pc.product_id = p.id AND pc.product_version_id = p.version_id AND c.level = 3 LIMIT 1) top
+               FROM product p
+               JOIN product_translation pt ON pt.product_id = p.id AND pt.product_version_id = p.version_id AND pt.language_id = UNHEX(?)
+              WHERE p.active = 1 AND p.available = 1 AND p.parent_id IS NULL AND p.product_media_id IS NOT NULL
+                AND JSON_EXTRACT(p.price, ?) IS NOT NULL
+                AND CAST(JSON_UNQUOTE(JSON_EXTRACT(p.price, ?)) AS DECIMAL(6,2)) BETWEEN 10 AND 60
+              ORDER BY pct DESC, p.product_number LIMIT 400",
+            [$pctPath, self::SK_LANGUAGE, $pctPath, $pctPath]
+        );
+        $out = [];
+        $perTop = [];
+        foreach ($rows as $r) {
+            $top = (string) ($r['top'] ?? '');
+            if (($perTop[$top] ?? 0) >= 2) {
+                continue;
+            }
+            $perTop[$top] = ($perTop[$top] ?? 0) + 1;
+            $out[] = ['id' => $r['id'], 'number' => (string) $r['number'], 'name' => mb_substr((string) $r['name'], 0, 60), 'pct' => (string) $r['pct']];
+            if (\count($out) >= 12) {
+                break;
+            }
+        }
+        return $out;
     }
 
     private function countProducts(string $navId): int
