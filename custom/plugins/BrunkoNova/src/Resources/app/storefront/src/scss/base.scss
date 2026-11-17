@@ -445,3 +445,8 @@ body .product-box .product-info .product-price-info{margin-top:auto;}
 body.rhweb-foundation .product-box .product-info .product-action{margin-top:0 !important;}
 /* Foundation ma pravidlo ".product-info *:not(...) {margin:0}", ktore ruší auto okraj ceny -> musi byt silnejsie */
 body.rhweb-foundation .product-box .product-info .product-price-info{margin-top:auto !important;}
+/* Cena v karte na stred (aj akciovy ramcek aj bezna cena) */
+body .product-box .product-price-wrapper{text-align:center;}
+body .product-box .product-price-wrapper .product-cheapest-price{display:flex;justify-content:center;}
+body .product-box .product-price-wrapper .brunko-promo{width:auto;}
+body .product-box .product-price-wrapper .brunko-price-line{width:auto;justify-content:center;}
