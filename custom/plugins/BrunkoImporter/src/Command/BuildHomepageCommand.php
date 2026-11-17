@@ -106,12 +106,15 @@ class BuildHomepageCommand extends Command
         ];
         $stream = [
             'id' => $streamId,
-            'translations' => $this->tr(['name' => 'Novinky (úvodná stránka)', 'description' => 'Aktívne hlavné produkty, radené podľa dátumu pridania']),
+            'translations' => $this->tr(['name' => 'Novinky (úvodná stránka)', 'description' => 'Aktívne hlavné produkty s popisom, radené podľa dátumu pridania']),
             'filters' => [[
                 'id' => md5('brunko:home:stream:f0'), 'type' => 'multi', 'operator' => 'AND', 'position' => 0,
                 'queries' => [
                     ['id' => md5('brunko:home:stream:f1'), 'type' => 'equals', 'field' => 'active', 'value' => '1', 'position' => 0],
                     ['id' => md5('brunko:home:stream:f2'), 'type' => 'equals', 'field' => 'parentId', 'value' => null, 'position' => 1],
+                    ['id' => md5('brunko:home:stream:f3'), 'type' => 'not', 'operator' => 'AND', 'position' => 2, 'queries' => [
+                        ['id' => md5('brunko:home:stream:f4'), 'type' => 'equals', 'field' => 'description', 'value' => null, 'position' => 0],
+                    ]],
                 ],
             ]],
         ];
@@ -238,7 +241,7 @@ class BuildHomepageCommand extends Command
     }
 
     /**
-     * 12 aktivnych dostupnych hlavnych produktov s najvyssou zlavou (listPrice), s obrazkom; max 2 z jednej kategorie najvyssej urovne.
+     * 12 aktivnych dostupnych hlavnych produktov s najvyssou zlavou (listPrice), s obrazkom a popisom (inak su karty v slideri nerovnako vysoke); max 2 z jednej kategorie najvyssej urovne.
      * Vyber je staticky (listPrice sa v product streame filtrovat neda), obnovi ho opakovane spustenie prikazu.
      *
      * @return list<array{id:string,number:string,name:string,pct:string}>
@@ -254,6 +257,7 @@ class BuildHomepageCommand extends Command
                FROM product p
                JOIN product_translation pt ON pt.product_id = p.id AND pt.product_version_id = p.version_id AND pt.language_id = UNHEX(?)
               WHERE p.active = 1 AND p.available = 1 AND p.parent_id IS NULL AND p.product_media_id IS NOT NULL
+                AND pt.description IS NOT NULL AND CHAR_LENGTH(TRIM(pt.description)) > 20
                 AND JSON_EXTRACT(p.price, ?) IS NOT NULL
                 AND CAST(JSON_UNQUOTE(JSON_EXTRACT(p.price, ?)) AS DECIMAL(6,2)) BETWEEN 10 AND 60
               ORDER BY pct DESC, p.product_number LIMIT 400",
