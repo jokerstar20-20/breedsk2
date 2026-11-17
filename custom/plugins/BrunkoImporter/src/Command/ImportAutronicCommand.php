@@ -38,6 +38,7 @@ class ImportAutronicCommand extends Command
 
     /** ID vyrobcu Autronic (nastavuje sa v doImport). */
     private string $manufacturerId = '';
+    private string $deliveryTimeId = '';
 
     /** @var array<string,string>|null ID hodnoty vlastnosti => ID obrazka (farby bez hex kodu, napr. "Viacfarebna", s obrazkom nastavenym v admine) */
     private ?array $optionMedia = null;
@@ -161,6 +162,7 @@ class ImportAutronicCommand extends Command
         }
         $taxId = $this->taxId(23.0, $dry);
         $this->manufacturerId = $this->ensureManufacturer($systemLang, $skLang, $dry);
+        $this->deliveryTimeId = $this->ensureDeliveryTime($systemLang, $skLang, $dry);
         $this->categories->init($sc['nav'], $skLang, $systemLang);
         $ctx = Context::createDefaultContext();
 
@@ -433,6 +435,7 @@ class ImportAutronicCommand extends Command
             'ean' => $p['ean'],
             'taxId' => $taxId,
             'manufacturerId' => $this->manufacturerId,
+            'deliveryTimeId' => $this->deliveryTimeId,
             'price' => [$price],
             'purchasePrices' => [[
                 'currencyId' => Defaults::CURRENCY,
@@ -782,6 +785,7 @@ class ImportAutronicCommand extends Command
             'productNumber' => $parentNumber,
             'taxId' => $taxId,
             'manufacturerId' => $this->manufacturerId,
+            'deliveryTimeId' => $this->deliveryTimeId,
             'price' => [$this->priceStruct($cheapest)],
             'stock' => $stock,
             'active' => $active,
@@ -1020,6 +1024,31 @@ class ImportAutronicCommand extends Command
     }
 
     /** Vyrobca Autronic: pouzije sa existujuci (podla nazvu), inak sa vytvori. */
+    /**
+     * Dodacia lehota podla dodavatela: Kondela = "Skladom" (1-2 dni), Autronic (sklad Praha) = "Dostupne", dodanie 3-8 pracovnych dni.
+     * Neskorsi import z Oberonu prepise lehotu na "Skladom" u produktov, ktore su na vlastnom sklade.
+     */
+    private function ensureDeliveryTime(string $systemLang, string $skLang, bool $dry): string
+    {
+        $skladom = $this->supplier() === 'kondela';
+        $id = md5($skladom ? 'brunko:deliverytime:skladom' : 'brunko:deliverytime:dostupne');
+        if (!$dry) {
+            $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s.v');
+            $this->db->executeStatement(
+                'INSERT IGNORE INTO delivery_time (id, min, max, unit, created_at) VALUES (UNHEX(?), ?, ?, ?, ?)',
+                [$id, $skladom ? 1 : 3, $skladom ? 2 : 8, 'day', $now]
+            );
+            foreach (array_unique([$systemLang, $skLang]) as $lang) {
+                $this->db->executeStatement(
+                    'INSERT IGNORE INTO delivery_time_translation (delivery_time_id, language_id, name, created_at) VALUES (UNHEX(?), UNHEX(?), ?, ?)',
+                    [$id, $lang, $skladom ? 'Skladom' : '3-8 pracovných dní', $now]
+                );
+            }
+        }
+
+        return $id;
+    }
+
     private function ensureManufacturer(string $systemLang, string $skLang, bool $dry): string
     {
         $existing = $this->db->fetchOne(

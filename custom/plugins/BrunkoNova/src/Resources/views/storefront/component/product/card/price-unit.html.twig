@@ -26,30 +26,13 @@
                 <span class="brunko-promo-box">
                     {{ block('brunko_product_box_main_price_inner') }}
                 </span>
-                {{ block('brunko_product_box_availability') }}
             </span>
         </span>
     {% else %}
         <span class="brunko-price-line">
             {{ block('brunko_product_box_main_price_inner') }}
-            {{ block('brunko_product_box_availability') }}
         </span>
     {% endif %}
-{% endblock %}
-
-{# Dostupnosť vedľa ceny: zelená bodka + "Skladom" / červená bodka + "Nedostupné". #}
-{% block brunko_product_box_availability %}
-    {% set brunkoInStock = product.available and product.availableStock >= product.minPurchase %}
-    <span class="brunko-availability {{ brunkoInStock ? 'is-available' : 'is-unavailable' }}">
-        <span class="brunko-availability-dot" aria-hidden="true"></span>
-        <span class="brunko-availability-text">
-            {% if brunkoInStock %}
-                {{ 'brunko.listing.available'|trans|sw_sanitize }}
-            {% else %}
-                {{ 'brunko.listing.unavailable'|trans|sw_sanitize }}
-            {% endif %}
-        </span>
-    </span>
 {% endblock %}
 
 {% block brunko_product_box_main_price_inner %}

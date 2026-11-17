@@ -4,7 +4,9 @@
             "available": "Skladom",
             "unavailable": "Nedostupné",
             "promoBadge": "Akcia",
-            "addToCart": "Do košíka"
+            "addToCart": "Do košíka",
+            "availableDelivery": "Dostupné",
+            "workingDays": "pracovných dní"
         },
         "availability": {
             "many": "Skladom viac ako 50 ks",

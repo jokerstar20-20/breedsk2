@@ -429,3 +429,11 @@ body.rhweb-foundation .footer-link-item div{color:#6b7280;}
 .cms-element-product-slider .base-slider-controls-next .icon{color:#fff;}
 .cms-element-product-slider .base-slider-controls-prev:hover,
 .cms-element-product-slider .base-slider-controls-next:hover{background:#000;}
+
+/* Dostupnost v odznakoch na obrazku (pod "Akcia"): Skladom / Dostupne + dodacia lehota */
+body .product-box .product-badges{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;}
+body .product-box .product-badges .badge.brunko-availability-badge{display:inline-flex;flex-direction:column;align-items:flex-start;font-size:.8rem;font-weight:700;line-height:1.15;padding:.25rem .5rem;border-radius:4px;color:#fff;white-space:nowrap;}
+body .product-box .product-badges .badge.brunko-availability-badge small{font-size:.68rem;font-weight:600;opacity:.95;}
+body .product-box .product-badges .badge.brunko-availability-badge.is-available{background:#198754;}
+body .product-box .product-badges .badge.brunko-availability-badge.is-delivery{background:#0d6efd;}
+body .product-box .product-badges .badge.brunko-availability-badge.is-unavailable{background:#dc3545;}
