@@ -7,9 +7,9 @@ use Shopware\Core\Checkout\Cart\CartBehavior;
 use Shopware\Core\Checkout\Cart\LineItem\CartDataCollection;
 use Shopware\Core\Checkout\Cart\CartProcessorInterface;
 use Shopware\Core\Checkout\Cart\LineItem\LineItem;
-use Shopware\Core\Checkout\Cart\Price\PercentagePriceCalculator;
+use Shopware\Core\Checkout\Cart\Price\AbsolutePriceCalculator;
 use Shopware\Core\Checkout\Cart\Price\QuantityPriceCalculator;
-use Shopware\Core\Checkout\Cart\Price\Struct\PercentagePriceDefinition;
+use Shopware\Core\Checkout\Cart\Price\Struct\AbsolutePriceDefinition;
 use Shopware\Core\Checkout\Cart\Price\Struct\QuantityPriceDefinition;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRule;
 use Shopware\Core\Checkout\Cart\Tax\Struct\TaxRuleCollection;
@@ -19,7 +19,7 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 /**
  * Podla zvolenej platby:
  *  - dobierka (payment_cashpayment): pripocita poplatok (default 2,90 EUR s DPH) ako samostatnu polozku kosika,
- *  - platba vopred (payment_prepayment): odpocita percentualnu zlavu (default 1 %) z tovaru v kosiku.
+ *  - platba vopred (payment_prepayment): odpocita zlavu (default 1 % z tovaru), zaokruhlenu nahor na desatiny eura.
  * Hodnoty sa menia v Rozsirenia > Moje rozsirenia > BrunkoCheckout > Konfigurovat.
  */
 class PaymentAdjustmentProcessor implements CartProcessorInterface
@@ -27,12 +27,14 @@ class PaymentAdjustmentProcessor implements CartProcessorInterface
     public const FEE_ID = 'brunko-cod-fee';
     public const DISCOUNT_ID = 'brunko-prepayment-discount';
     public const FEE_TYPE = 'brunko-payment-fee';
+    // Vlastny typ (nie 'discount'), aby ho Shopware DiscountCartProcessor neprepocitaval a nepovazoval za odstranitelny.
+    public const DISCOUNT_TYPE = 'brunko-payment-discount';
     public const COD = 'payment_cashpayment';
     public const PREPAYMENT = 'payment_prepayment';
 
     public function __construct(
         private readonly QuantityPriceCalculator $quantityCalculator,
-        private readonly PercentagePriceCalculator $percentageCalculator,
+        private readonly AbsolutePriceCalculator $absoluteCalculator,
         private readonly SystemConfigService $config,
     ) {
     }
@@ -75,13 +77,19 @@ class PaymentAdjustmentProcessor implements CartProcessorInterface
             if ($percent <= 0) {
                 return;
             }
-            $definition = new PercentagePriceDefinition(-1 * $percent);
-            $item = new LineItem(self::DISCOUNT_ID, LineItem::DISCOUNT_LINE_ITEM, null, 1);
+            // Zlava sa zaokruhluje NAHOR na desatiny eura (0,51 -> 0,60), aby zakaznik dostal radsej o trosku viac a v kosiku neboli stotiny.
+            $goodsTotal = $goods->getPrices()->sum()->getTotalPrice();
+            $discount = ceil(round($goodsTotal * $percent / 100, 6) * 10 - 1e-9) / 10;
+            if ($discount <= 0) {
+                return;
+            }
+            $definition = new AbsolutePriceDefinition(-1 * $discount);
+            $item = new LineItem(self::DISCOUNT_ID, self::DISCOUNT_TYPE, null, 1);
             $item->setLabel(sprintf('Zľava %s %% pri platbe vopred na účet', rtrim(rtrim(number_format($percent, 2, ',', ''), '0'), ',')));
             $item->setStackable(false);
             $item->setRemovable(false);
             $item->setPriceDefinition($definition);
-            $item->setPrice($this->percentageCalculator->calculate($definition->getPercentage(), $goods->getPrices(), $context));
+            $item->setPrice($this->absoluteCalculator->calculate($definition->getPrice(), $goods->getPrices(), $context));
             $toCalculate->getLineItems()->add($item);
         }
     }
