@@ -430,12 +430,6 @@ body.rhweb-foundation .footer-link-item div{color:#6b7280;}
 .cms-element-product-slider .base-slider-controls-prev:hover,
 .cms-element-product-slider .base-slider-controls-next:hover{background:#000;}
 
-/* Dostupnost v odznakoch na obrazku (pod "Akcia"): Skladom / Dostupne + dodacia lehota */
-body .product-box .product-badges{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;}
-body .product-box .product-badges .badge.brunko-availability-badge{display:inline-flex;flex-direction:column;align-items:flex-start;font-size:.8rem;font-weight:700;line-height:1.15;padding:.25rem .5rem;border-radius:4px;color:#fff;white-space:nowrap;}
-body .product-box .product-badges .badge.brunko-availability-badge small{font-size:.68rem;font-weight:600;opacity:.95;}
-body .product-box .product-badges .badge.brunko-availability-badge.is-available{background:#198754;}
-body .product-box .product-badges .badge.brunko-availability-badge.is-unavailable{background:#dc3545;}
 
 /* Cena a tlacidlo vzdy dole (aj ked produkt nema popis) - rovnaky vzhlad kariet v listingu aj slideroch */
 body .product-box .card-body{display:flex;flex-direction:column;flex:1 1 auto;}
@@ -445,8 +439,11 @@ body .product-box .product-info .product-price-info{margin-top:auto;}
 body.rhweb-foundation .product-box .product-info .product-action{margin-top:0 !important;}
 /* Foundation ma pravidlo ".product-info *:not(...) {margin:0}", ktore ruší auto okraj ceny -> musi byt silnejsie */
 body.rhweb-foundation .product-box .product-info .product-price-info{margin-top:auto !important;}
-/* Cena v karte na stred (aj akciovy ramcek aj bezna cena) */
-body .product-box .product-price-wrapper{text-align:center;}
-body .product-box .product-price-wrapper .product-cheapest-price{display:flex;justify-content:center;}
-body .product-box .product-price-wrapper .brunko-promo{width:auto;}
-body .product-box .product-price-wrapper .brunko-price-line{width:auto;justify-content:center;}
+
+/* Dostupnost vedla ceny (PC); na mobile a tablete (pod 992 px) pod cenou */
+@media (max-width:991.98px){
+  body .product-box .brunko-price-line{flex-direction:column;align-items:center;justify-content:center;gap:.4rem;}
+  body .product-box .brunko-price-line .brunko-availability{flex:0 0 auto;}
+  body .product-box .product-price-wrapper{text-align:center;}
+  body .product-box .product-price-wrapper .product-cheapest-price{display:flex;justify-content:center;}
+}

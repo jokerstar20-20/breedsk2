@@ -23,20 +23,3 @@
         </span>
     {% endif %}
 {% endblock %}
-
-{# Dostupnosť pod odznakom akcie (na obrázku): "Skladom" (zelená) alebo "Dostupné" + dodacia lehota (z dodacej doby produktu). #}
-{% block component_product_badges_topseller %}
-    {% set brunkoInStock = product.available and product.availableStock >= product.minPurchase %}
-    {# deliveryTime sa v listingu nenacitava, preto porovnanie podla ID dodacej doby "3-8 pracovnych dni" (vytvara ju import Autronic). #}
-    {% set brunkoSlow = product.deliveryTimeId == 'ac52880d0d1c9559ba813e0dcb059236' %}
-    <span class="badge brunko-availability-badge {{ not brunkoInStock ? 'is-unavailable' : 'is-available' }}{{ brunkoSlow ? ' is-delivery' : '' }}">
-        {% if not brunkoInStock %}
-            {{ 'brunko.listing.unavailable'|trans|sw_sanitize }}
-        {% elseif brunkoSlow %}
-            {{ 'brunko.listing.availableDelivery'|trans|sw_sanitize }}
-        {% else %}
-            {{ 'brunko.listing.available'|trans|sw_sanitize }}
-        {% endif %}
-    </span>
-    {{ parent() }}
-{% endblock %}
