@@ -5,7 +5,7 @@
     napr. pri kombinacii tovaru "Skladom" (Kondela) a "Dostupne" (Autronic) sa zasielka odosiela naraz.
 #}
 {% block component_line_item_delivery_date %}
-    {% if lineItem.type != 'rhweb-bundle-discount' and page.cart.deliveries.count > 0 %}
+    {% if lineItem.type == 'product' and page.cart.deliveries.count > 0 %}
         {% set brunkoDeliveryDate = page.cart.deliveries.first.deliveryDate %}
         {% if brunkoDeliveryDate %}
             <div class="line-item-delivery-date">
