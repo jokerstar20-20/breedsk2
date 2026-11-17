@@ -6,11 +6,12 @@
             "promoBadge": "Akcia",
             "addToCart": "Do košíka",
             "availableDelivery": "Dostupné",
-            "workingDays": "pracovných dní"
+            "deliveryDays": "dodanie 3-8 pracovných dní"
         },
         "availability": {
             "many": "Skladom viac ako 50 ks",
-            "exact": "Skladom %count% ks"
+            "exact": "Skladom %count% ks",
+            "delivery": "Dostupné, dodanie 3-8 pracovných dní"
         },
         "footer": {
             "benefits": {

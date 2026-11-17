@@ -7,7 +7,11 @@
         {% set soldOut = false %}
         {% set className = 'availability' %}
         {% set rhwebWithoutStock = false %}
-        {% if product.availableStock >= brunkoMany %}
+        {% if product.deliveryTimeId == 'ac52880d0d1c9559ba813e0dcb059236' %}
+            {# Sklad dodavatela (Autronic): "Dostupne", dodanie 3-8 pracovnych dni; po napojeni Oberonu sa pri produktoch na vlastnom sklade lehota prepne na "Skladom". #}
+            {% set type = 'success' %}
+            {% set content = 'brunko.availability.delivery'|trans|sw_sanitize %}
+        {% elseif product.availableStock >= brunkoMany %}
             {% set type = 'success' %}
             {% set content = 'brunko.availability.many'|trans|sw_sanitize %}
         {% else %}

@@ -27,14 +27,14 @@
 {# Dostupnosť pod odznakom akcie (na obrázku): "Skladom" (zelená) alebo "Dostupné" + dodacia lehota (z dodacej doby produktu). #}
 {% block component_product_badges_topseller %}
     {% set brunkoInStock = product.available and product.availableStock >= product.minPurchase %}
-    {% set brunkoDt = product.deliveryTime %}
-    {% set brunkoSlow = brunkoDt and brunkoDt.unit == 'day' and brunkoDt.min >= 3 %}
-    <span class="badge brunko-availability-badge {{ not brunkoInStock ? 'is-unavailable' : (brunkoSlow ? 'is-delivery' : 'is-available') }}">
+    {# deliveryTime sa v listingu nenacitava, preto porovnanie podla ID dodacej doby "3-8 pracovnych dni" (vytvara ju import Autronic). #}
+    {% set brunkoSlow = product.deliveryTimeId == 'ac52880d0d1c9559ba813e0dcb059236' %}
+    <span class="badge brunko-availability-badge {{ not brunkoInStock ? 'is-unavailable' : 'is-available' }}{{ brunkoSlow ? ' is-delivery' : '' }}">
         {% if not brunkoInStock %}
             {{ 'brunko.listing.unavailable'|trans|sw_sanitize }}
         {% elseif brunkoSlow %}
             {{ 'brunko.listing.availableDelivery'|trans|sw_sanitize }}
-            <small>{{ brunkoDt.min }}-{{ brunkoDt.max }} {{ 'brunko.listing.workingDays'|trans|sw_sanitize }}</small>
+            <small>{{ 'brunko.listing.deliveryDays'|trans|sw_sanitize }}</small>
         {% else %}
             {{ 'brunko.listing.available'|trans|sw_sanitize }}
         {% endif %}
