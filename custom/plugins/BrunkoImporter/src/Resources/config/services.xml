@@ -58,5 +58,14 @@
             <argument type="service" id="logger"/>
             <tag name="console.command"/>
         </service>
+
+        <service id="Brunko\Importer\Command\BuildHomepageCommand">
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
+            <argument type="service" id="cms_page.repository"/>
+            <argument type="service" id="category.repository"/>
+            <argument type="service" id="product_stream.repository"/>
+            <argument type="service" id="media.repository"/>
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
