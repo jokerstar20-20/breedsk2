@@ -441,3 +441,5 @@ body .product-box .product-badges .badge.brunko-availability-badge.is-unavailabl
 body .product-box .card-body{display:flex;flex-direction:column;flex:1 1 auto;}
 body .product-box .product-info{display:flex;flex-direction:column;flex:1 1 auto;}
 body .product-box .product-info .product-price-info{margin-top:auto;}
+/* Cena je tesne nad tlacidlom: len jeden "auto" okraj (cena), tlacidlo bez neho, inak sa volne miesto rozdeli na polovicu */
+body.rhweb-foundation .product-box .product-info .product-action{margin-top:0 !important;}

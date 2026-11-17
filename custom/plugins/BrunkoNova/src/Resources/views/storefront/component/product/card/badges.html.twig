@@ -34,7 +34,6 @@
             {{ 'brunko.listing.unavailable'|trans|sw_sanitize }}
         {% elseif brunkoSlow %}
             {{ 'brunko.listing.availableDelivery'|trans|sw_sanitize }}
-            <small>{{ 'brunko.listing.deliveryDays'|trans|sw_sanitize }}</small>
         {% else %}
             {{ 'brunko.listing.available'|trans|sw_sanitize }}
         {% endif %}
