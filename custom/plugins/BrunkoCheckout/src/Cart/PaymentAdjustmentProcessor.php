@@ -88,6 +88,8 @@ class PaymentAdjustmentProcessor implements CartProcessorInterface
             $item->setLabel(sprintf('Zľava %s %% pri platbe vopred na účet', rtrim(rtrim(number_format($percent, 2, ',', ''), '0'), ',')));
             $item->setStackable(false);
             $item->setRemovable(false);
+            // Nesmie vstupit do vypoctu dodania, inak by dostala zalozny cas z dopravy (3-10 dni) a predlzila celu zasielku.
+            $item->setShippingCostAware(false);
             $item->setPriceDefinition($definition);
             $item->setPrice($this->absoluteCalculator->calculate($definition->getPrice(), $goods->getPrices(), $context));
             $toCalculate->getLineItems()->add($item);
