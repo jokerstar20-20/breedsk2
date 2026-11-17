@@ -421,3 +421,11 @@ body.rhweb-foundation .footer-link-item div{color:#6b7280;}
 .cms-element-product-slider .product-box .card-body{display:flex;flex-direction:column;flex:1 1 auto;}
 .cms-element-product-slider .product-box .product-info{display:flex;flex-direction:column;flex:1 1 auto;}
 .cms-element-product-slider .product-box .product-info .product-price-info{margin-top:auto;}
+
+/* Slider produktov: viditelne sipky (aby bolo jasne, ze sa da posuvat) */
+.cms-element-product-slider .base-slider-controls-prev,
+.cms-element-product-slider .base-slider-controls-next{width:40px;height:40px;border-radius:50%;background:#111827;color:#fff;opacity:1;box-shadow:0 2px 8px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;z-index:5;}
+.cms-element-product-slider .base-slider-controls-prev .icon,
+.cms-element-product-slider .base-slider-controls-next .icon{color:#fff;}
+.cms-element-product-slider .base-slider-controls-prev:hover,
+.cms-element-product-slider .base-slider-controls-next:hover{background:#000;}

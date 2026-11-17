@@ -27,11 +27,11 @@ class BuildHomepageCommand extends Command
     private const STOREFRONT_TYPE = '8a243080f92e4c719546314b577cf82b';
     private const TILES = 8;
 
-    /** Obrazok dlazdice kategorie = cover produktu s tymto cislom (inak prvy produkt kategorie). */
+    /** Obrazok dlazdice kategorie = [cislo produktu, poradie obrazka (0 = cover)], inak cover prveho produktu kategorie. */
     private const TILE_IMAGE_PRODUCT = [
-        'Kuchyňa a Jedáleň' => 'ASE-1040',   // jedalensky set: stol so stolickami
-        'Spálňa' => '0000397543',            // manzelska postel SHEILA
-        'Bytové doplnky' => 'PRN2019',       // piknikovy kos
+        'Kuchyňa a Jedáleň' => ['ASE-1040', 0],   // jedalensky set: stol so stolickami
+        'Spálňa' => ['0000397543', 0],            // manzelska postel SHEILA
+        'Bytové doplnky' => ['PRN2019', 1],       // piknikovy kos (obrazok z boku)
     ];
 
     public function __construct(
@@ -182,8 +182,8 @@ class BuildHomepageCommand extends Command
             'displayMode' => ['source' => 'static', 'value' => 'standard'],
             'boxLayout' => ['source' => 'static', 'value' => 'standard'],
             'navigationArrows' => ['source' => 'static', 'value' => 'outside'],
-            'rotate' => ['source' => 'static', 'value' => false],
-            'autoplayTimeout' => ['source' => 'static', 'value' => 5000],
+            'rotate' => ['source' => 'static', 'value' => true],
+            'autoplayTimeout' => ['source' => 'static', 'value' => 6000],
             'speed' => ['source' => 'static', 'value' => 300],
             'border' => ['source' => 'static', 'value' => false],
             'elMinWidth' => ['source' => 'static', 'value' => '250px'],
@@ -325,9 +325,10 @@ class BuildHomepageCommand extends Command
             );
             $mediaId = false;
             if (isset(self::TILE_IMAGE_PRODUCT[(string) $r['name']])) {
+                [$number, $position] = self::TILE_IMAGE_PRODUCT[(string) $r['name']];
                 $mediaId = $this->db->fetchOne(
-                    'SELECT LOWER(HEX(pm.media_id)) FROM product p JOIN product_media pm ON pm.id = p.product_media_id AND pm.version_id = p.product_media_version_id WHERE p.product_number = ? LIMIT 1',
-                    [self::TILE_IMAGE_PRODUCT[(string) $r['name']]]
+                    'SELECT LOWER(HEX(pm.media_id)) FROM product p JOIN product_media pm ON pm.product_id = p.id AND pm.product_version_id = p.version_id WHERE p.product_number = ? ORDER BY pm.position LIMIT 1 OFFSET ' . (int) $position,
+                    [$number]
                 );
             }
             $mediaId = $mediaId ?: $this->db->fetchOne(
