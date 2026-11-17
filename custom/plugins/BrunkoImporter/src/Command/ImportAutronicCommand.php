@@ -61,7 +61,8 @@ class ImportAutronicCommand extends Command
             ->addOption('no-download', null, InputOption::VALUE_NONE, 'Nesťahuj feed, pouzi existujuci var/feeds/autronic.xml')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Nic nezapisuj, len vypis co by sa stalo')
             ->addOption('limit', null, InputOption::VALUE_REQUIRED, 'Spracuj najviac N produktov (na test)')
-            ->addOption('force', null, InputOption::VALUE_NONE, 'Ignoruj poistku proti prazdnemu/neuplnemu feedu');
+            ->addOption('force', null, InputOption::VALUE_NONE, 'Ignoruj poistku proti prazdnemu/neuplnemu feedu')
+            ->addOption('skip-homepage', null, InputOption::VALUE_NONE, 'Po importe neobnovuj uvodnu stranku (brunko:homepage:build)');
     }
 
     protected ?SymfonyStyle $io = null;
@@ -70,6 +71,7 @@ class ImportAutronicCommand extends Command
     {
         $io = $this->io = new SymfonyStyle($input, $output);
         $dry = (bool) $input->getOption('dry-run');
+        $this->skipHomepage = (bool) $input->getOption('skip-homepage');
         $limit = $input->getOption('limit') !== null ? (int) $input->getOption('limit') : null;
         $started = microtime(true);
 
@@ -397,6 +399,9 @@ class ImportAutronicCommand extends Command
         ));
         $this->logger->info('Brunko import autronic', $stats);
         $this->reportEmptyCategories($io);
+        if (!$dry && !$this->skipHomepage) {
+            $this->rebuildHomepage($io);
+        }
 
         return $stats['failed'] > 0 ? Command::FAILURE : Command::SUCCESS;
     }
@@ -1070,6 +1075,27 @@ class ImportAutronicCommand extends Command
      * Len vypis, nic sa nemaze. Strom produktov sa dopocitava indexerom na pozadi, takze hned po importe moze
      * ukazat aj kategorie, ktore sa za chvilu naplnia (pri pochybnosti spustite kontrolu znova po dobehnuti fronty).
      */
+    private bool $skipHomepage = false;
+
+    /** Obnovi akciove produkty a dlazdice na uvodnej strane; chyba tu import nezhodi. */
+    protected function rebuildHomepage(SymfonyStyle $io): void
+    {
+        try {
+            $cmd = $this->getApplication()?->find('brunko:homepage:build');
+            if ($cmd === null) {
+                return;
+            }
+            $io->section('Uvodna stranka');
+            $rc = $cmd->run(new \Symfony\Component\Console\Input\ArrayInput([]), $io);
+            if ($rc !== Command::SUCCESS) {
+                $io->warning('Obnova uvodnej stranky skoncila s chybou (import je v poriadku).');
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('Brunko homepage rebuild zlyhal: ' . $e->getMessage());
+            $io->warning('Obnova uvodnej stranky zlyhala: ' . $e->getMessage());
+        }
+    }
+
     protected function reportEmptyCategories(SymfonyStyle $io): void
     {
         $roots = $this->db->fetchFirstColumn('SELECT DISTINCT LOWER(HEX(navigation_category_id)) FROM sales_channel WHERE navigation_category_id IS NOT NULL');
