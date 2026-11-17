@@ -77,7 +77,7 @@ class PaymentAdjustmentProcessor implements CartProcessorInterface
             }
             $definition = new PercentagePriceDefinition(-1 * $percent);
             $item = new LineItem(self::DISCOUNT_ID, LineItem::DISCOUNT_LINE_ITEM, null, 1);
-            $item->setLabel(sprintf('Zľava %s %% pri platbe vopred', rtrim(rtrim(number_format($percent, 2, ',', ''), '0'), ',')));
+            $item->setLabel(sprintf('Zľava %s %% pri platbe vopred na účet', rtrim(rtrim(number_format($percent, 2, ',', ''), '0'), ',')));
             $item->setStackable(false);
             $item->setRemovable(false);
             $item->setPriceDefinition($definition);
