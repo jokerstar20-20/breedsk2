@@ -1027,7 +1027,7 @@ class ImportAutronicCommand extends Command
 
     /** Vyrobca Autronic: pouzije sa existujuci (podla nazvu), inak sa vytvori. */
     /**
-     * Dodacia lehota podla dodavatela: Kondela = "Skladom" (1-2 dni), Autronic (sklad Praha) = "Dostupne", dodanie 3-8 pracovnych dni.
+     * Dodacia lehota podla dodavatela: Kondela = "Skladom" (1-2 dni), Autronic (sklad Praha) = "Dostupne", dodanie 3-10 dni (kalendarnych; Shopware pracovne dni nepozna).
      * Neskorsi import z Oberonu prepise lehotu na "Skladom" u produktov, ktore su na vlastnom sklade.
      */
     private function ensureDeliveryTime(string $systemLang, string $skLang, bool $dry): string
@@ -1038,12 +1038,12 @@ class ImportAutronicCommand extends Command
             $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s.v');
             $this->db->executeStatement(
                 'INSERT IGNORE INTO delivery_time (id, min, max, unit, created_at) VALUES (UNHEX(?), ?, ?, ?, ?)',
-                [$id, $skladom ? 1 : 3, $skladom ? 2 : 8, 'day', $now]
+                [$id, $skladom ? 1 : 3, $skladom ? 2 : 10, 'day', $now]
             );
             foreach (array_unique([$systemLang, $skLang]) as $lang) {
                 $this->db->executeStatement(
                     'INSERT IGNORE INTO delivery_time_translation (delivery_time_id, language_id, name, created_at) VALUES (UNHEX(?), UNHEX(?), ?, ?)',
-                    [$id, $lang, $skladom ? 'Skladom' : '3-8 pracovných dní', $now]
+                    [$id, $lang, $skladom ? 'Skladom' : '3-10 dní', $now]
                 );
             }
         }

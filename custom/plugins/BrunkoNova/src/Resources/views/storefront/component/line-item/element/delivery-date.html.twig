@@ -1,0 +1,19 @@
+{% sw_extends '@Storefront/storefront/component/line-item/element/delivery-date.html.twig' %}
+
+{#
+    Dodacia lehota v kosiku: vsetky polozky ukazuju spolocny (najneskorsi) termin dorucenia,
+    napr. pri kombinacii tovaru "Skladom" (Kondela) a "Dostupne" (Autronic) sa zasielka odosiela naraz.
+#}
+{% block component_line_item_delivery_date %}
+    {% if lineItem.type != 'rhweb-bundle-discount' and page.cart.deliveries.count > 0 %}
+        {% set brunkoDeliveryDate = page.cart.deliveries.first.deliveryDate %}
+        {% if brunkoDeliveryDate %}
+            <div class="line-item-delivery-date">
+                {{ 'checkout.lineItemDeliveryDate'|trans({
+                    '%earliest%': brunkoDeliveryDate.earliest|format_date('short', locale=app.request.locale),
+                    '%latest%': brunkoDeliveryDate.latest|format_date('short', locale=app.request.locale)
+                })|sw_sanitize }}
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
