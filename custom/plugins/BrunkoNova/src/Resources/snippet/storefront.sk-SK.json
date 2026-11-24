@@ -121,5 +121,11 @@
         "commentLabel": "Poznámka",
         "formSubmit": "Odoslať odstúpenie od zmluvy",
         "success": "Vaše odstúpenie od zmluvy sme prijali a čo najskôr ho spracujeme."
-    }
+    },
+    "error": {
+        "VIOLATION::IBAN_INVALID": "Zadajte platný IBAN (napr. SK31 1200 0000 1987 4263 7541).",
+        "VIOLATION::IBAN_REQUIRED": "Zadajte IBAN, na ktorý vrátime peniaze."
+    },
+    "VIOLATION::IBAN_INVALID": "Zadajte platný IBAN (napr. SK31 1200 0000 1987 4263 7541).",
+    "VIOLATION::IBAN_REQUIRED": "Zadajte IBAN, na ktorý vrátime peniaze."
 }

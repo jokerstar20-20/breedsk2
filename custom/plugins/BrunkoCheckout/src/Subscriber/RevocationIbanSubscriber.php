@@ -20,6 +20,11 @@ class RevocationIbanSubscriber implements EventSubscriberInterface
 
     public function addIban(BuildValidationEvent $event): void
     {
-        $event->getDefinition()->add('iban', new NotBlank(), new Iban());
+        $m = 'VIOLATION::IBAN_INVALID';
+        $event->getDefinition()->add(
+            'iban',
+            new NotBlank(message: 'VIOLATION::IBAN_REQUIRED'),
+            new Iban(message: $m)
+        );
     }
 }
