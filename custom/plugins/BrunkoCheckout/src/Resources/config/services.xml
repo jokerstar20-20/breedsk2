@@ -27,5 +27,8 @@
             <argument type="service" id="Brunko\Checkout\Service\IbanCipher"/>
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="Brunko\Checkout\Subscriber\RevocationReadOnlySubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
     </services>
 </container>

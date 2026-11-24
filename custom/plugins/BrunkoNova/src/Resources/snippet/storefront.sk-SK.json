@@ -86,6 +86,12 @@
         "sidebar": {
             "categories": "Kategórie",
             "search": "Hľadať vo filtroch ..."
+        },
+        "footer": {
+            "logo": {
+                "headline": "O nás",
+                "content": "Vitajte na NAGA.sk, kde Vám ponúkame široký výber nábytku a bytových doplnkov pre každú miestnosť v domácnosti. Staviame na férových cenách, spoľahlivom doručení a ústretovom prístupe, aby bol nákup na našom e-shope pre Vás zážitkom."
+            }
         }
     },
     "general": {
