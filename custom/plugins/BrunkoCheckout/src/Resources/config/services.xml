@@ -30,5 +30,10 @@
         <service id="Brunko\Checkout\Subscriber\RevocationReadOnlySubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="Brunko\Checkout\Subscriber\ContactStoreSubscriber">
+            <argument type="service" id="Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry"/>
+            <argument type="service" id="logger"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
     </services>
 </container>

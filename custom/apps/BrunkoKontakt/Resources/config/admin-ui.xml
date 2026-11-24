@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<admin-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/CustomEntity/Xml/Config/AdminUi/admin-ui-1.0.xsd">
+    <entity name="custom_entity_kontakt" navigation-parent="sw-customer" position="90" icon="regular-envelope" color="#14284B">
+        <listing>
+            <columns>
+                <column ref="odoslane"/>
+                <column ref="predmet"/>
+                <column ref="meno"/>
+                <column ref="priezvisko"/>
+                <column ref="email"/>
+                <column ref="telefon"/>
+                <column ref="vybavene"/>
+            </columns>
+        </listing>
+        <detail>
+            <tabs>
+                <tab name="Správa z kontaktného formulára">
+                    <card name="Správa">
+                        <field ref="odoslane"/>
+                        <field ref="predmet"/>
+                        <field ref="sprava"/>
+                        <field ref="vybavene"/>
+                    </card>
+                    <card name="Odosielateľ">
+                        <field ref="meno"/>
+                        <field ref="priezvisko"/>
+                        <field ref="email"/>
+                        <field ref="telefon"/>
+                    </card>
+                </tab>
+            </tabs>
+        </detail>
+    </entity>
+</admin-ui>

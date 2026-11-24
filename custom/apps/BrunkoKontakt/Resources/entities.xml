@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/CustomEntity/Xml/entity-1.0.xsd">
+    <entity name="custom_entity_kontakt" label-property="predmet">
+        <fields>
+            <string name="meno" store-api-aware="false"/>
+            <string name="priezvisko" store-api-aware="false"/>
+            <email name="email" store-api-aware="false"/>
+            <string name="telefon" store-api-aware="false"/>
+            <string name="predmet" store-api-aware="false" required="true"/>
+            <text name="sprava" store-api-aware="false"/>
+            <date name="odoslane" store-api-aware="false"/>
+            <bool name="vybavene" store-api-aware="false"/>
+        </fields>
+    </entity>
+</entities>
