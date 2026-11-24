@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/Framework/App/Manifest/Schema/manifest-2.0.xsd">
+    <meta>
+        <name>BrunkoOdstupenie</name>
+        <label>Odstúpenie od zmluvy</label>
+        <label lang="sk-SK">Odstúpenie od zmluvy</label>
+        <description>Zoznam žiadostí o odstúpenie od zmluvy z formulára na webe (ukladá plugin BrunkoCheckout).</description>
+        <description lang="sk-SK">Zoznam žiadostí o odstúpenie od zmluvy z formulára na webe (ukladá plugin BrunkoCheckout).</description>
+        <author>Brunko</author>
+        <copyright>(c) Brunko</copyright>
+        <version>1.0.0</version>
+        <license>proprietary</license>
+    </meta>
+</manifest>

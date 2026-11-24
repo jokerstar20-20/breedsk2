@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<admin-ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/CustomEntity/Xml/Config/AdminUi/admin-ui-1.0.xsd">
+    <entity name="custom_entity_odstupenie" navigation-parent="sw-order" position="90" icon="regular-undo" color="#14284B">
+        <listing>
+            <columns>
+                <column ref="odoslane"/>
+                <column ref="objednavka"/>
+                <column ref="meno"/>
+                <column ref="priezvisko"/>
+                <column ref="email"/>
+                <column ref="iban"/>
+            </columns>
+        </listing>
+        <detail>
+            <tabs>
+                <tab name="Odstúpenie od zmluvy">
+                    <card name="Údaje zo žiadosti">
+                        <field ref="odoslane"/>
+                        <field ref="objednavka"/>
+                        <field ref="meno"/>
+                        <field ref="priezvisko"/>
+                        <field ref="email"/>
+                        <field ref="iban"/>
+                        <field ref="poznamka"/>
+                    </card>
+                </tab>
+            </tabs>
+        </detail>
+    </entity>
+</admin-ui>
