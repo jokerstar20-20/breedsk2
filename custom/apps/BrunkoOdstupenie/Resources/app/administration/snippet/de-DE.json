@@ -1,0 +1,28 @@
+{
+  "custom_entity_odstupenie": {
+    "moduleTitle": "Odstúpenie od zmluvy",
+    "list": {
+      "odoslane": "Odoslané",
+      "objednavka": "Číslo objednávky",
+      "meno": "Meno",
+      "priezvisko": "Priezvisko",
+      "email": "E-mail",
+      "iban": "IBAN"
+    },
+    "tabs": {
+      "main": "Odstúpenie od zmluvy"
+    },
+    "cards": {
+      "zaznam": "Údaje zo žiadosti"
+    },
+    "fields": {
+      "odoslane": "Odoslané",
+      "objednavka": "Číslo objednávky",
+      "meno": "Meno",
+      "priezvisko": "Priezvisko",
+      "email": "E-mail",
+      "iban": "IBAN",
+      "poznamka": "Poznámka"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "custom_entity_kontakt": {
+    "moduleTitle": "Kontaktné správy",
+    "list": {
+      "odoslane": "Odoslané",
+      "predmet": "Predmet",
+      "meno": "Meno",
+      "priezvisko": "Priezvisko",
+      "email": "E-mail",
+      "telefon": "Telefón",
+      "vybavene": "Vybavené"
+    },
+    "tabs": {
+      "main": "Správa z kontaktného formulára"
+    },
+    "cards": {
+      "sprava": "Správa",
+      "odosielatel": "Odosielateľ"
+    },
+    "fields": {
+      "odoslane": "Odoslané",
+      "predmet": "Predmet",
+      "sprava": "Správa",
+      "vybavene": "Vybavené",
+      "meno": "Meno",
+      "priezvisko": "Priezvisko",
+      "email": "E-mail",
+      "telefon": "Telefón"
+    }
+  }
+}

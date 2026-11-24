@@ -14,8 +14,8 @@
         </listing>
         <detail>
             <tabs>
-                <tab name="Odstúpenie od zmluvy">
-                    <card name="Údaje zo žiadosti">
+                <tab name="main">
+                    <card name="zaznam">
                         <field ref="odoslane"/>
                         <field ref="objednavka"/>
                         <field ref="meno"/>

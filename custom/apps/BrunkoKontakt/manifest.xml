@@ -8,7 +8,7 @@
         <description lang="sk-SK">Zoznam správ z kontaktného formulára na webe (ukladá plugin BrunkoCheckout).</description>
         <author>Brunko</author>
         <copyright>(c) Brunko</copyright>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <license>proprietary</license>
     </meta>
 </manifest>
