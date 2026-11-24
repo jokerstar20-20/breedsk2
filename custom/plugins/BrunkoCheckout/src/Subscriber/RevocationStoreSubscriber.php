@@ -2,6 +2,7 @@
 
 namespace Brunko\Checkout\Subscriber;
 
+use Brunko\Checkout\Service\IbanCipher;
 use Psr\Log\LoggerInterface;
 use Shopware\Core\Content\RevocationRequest\Event\RevocationRequestEvent;
 use Shopware\Core\Framework\DataAbstractionLayer\DefinitionInstanceRegistry;
@@ -19,6 +20,7 @@ class RevocationStoreSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly DefinitionInstanceRegistry $registry,
         private readonly LoggerInterface $logger,
+        private readonly IbanCipher $cipher,
     ) {
     }
 
@@ -41,7 +43,7 @@ class RevocationStoreSubscriber implements EventSubscriberInterface
                 'priezvisko' => (string) ($d['lastName'] ?? ''),
                 'email' => (string) ($d['email'] ?? ''),
                 'objednavka' => (string) ($d['contractNumber'] ?? '-'),
-                'iban' => (string) ($d['iban'] ?? ''),
+                'iban' => $this->cipher->encrypt((string) ($d['iban'] ?? '')),
                 'poznamka' => (string) ($d['comment'] ?? ''),
                 'odoslane' => $when instanceof \DateTimeInterface ? $when : new \DateTimeImmutable(),
             ]], $event->getContext());
