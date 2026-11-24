@@ -1,0 +1,17 @@
+{% sw_extends '@Storefront/storefront/element/cms-element-form/form-types/online-revocation-request-form.html.twig' %}
+
+{# Odstupenie od zmluvy: povinne pole IBAN (ucet, na ktory vratime peniaze). Validaciu doplna plugin BrunkoCheckout. #}
+{% block cms_form_revocation_input_contract_number %}
+    {{ parent() }}
+    </div>
+
+    <div class="row g-2">
+        {% sw_include '@Storefront/storefront/element/cms-element-form/form-components/cms-element-form-input.html.twig'
+            with {
+            fieldName: 'iban',
+            autocomplete: 'off',
+            required: true,
+            additionalClass: 'col-md-12',
+            label: 'revocationRequest.ibanLabel',
+        } %}
+{% endblock %}

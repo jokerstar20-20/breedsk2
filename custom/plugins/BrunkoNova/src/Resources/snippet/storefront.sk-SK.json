@@ -105,6 +105,15 @@
         "privacyNoticeInformation": "Vezmite prosím na vedomie naše %privacyModalTagOpen%zásady ochrany osobných údajov%privacyModalTagClose%."
     },
     "revocationRequest": {
-        "privacyNoticeTextModal": "Naše zásady ochrany osobných údajov nájdete %privacyModalTagOpen%tu%privacyModalTagClose%."
+        "privacyNoticeTextModal": "Naše zásady ochrany osobných údajov nájdete %privacyModalTagOpen%tu%privacyModalTagClose%.",
+        "headline": "Odstúpenie od zmluvy",
+        "firstNameLabel": "Krstné meno",
+        "lastNameLabel": "Priezvisko",
+        "eMailLabel": "E-mailová adresa",
+        "contractNumberLabel": "Číslo objednávky",
+        "ibanLabel": "IBAN (číslo účtu, na ktorý vrátime peniaze)",
+        "commentLabel": "Poznámka",
+        "formSubmit": "Odoslať odstúpenie od zmluvy",
+        "success": "Vaše odstúpenie od zmluvy sme prijali a čo najskôr ho spracujeme."
     }
 }
