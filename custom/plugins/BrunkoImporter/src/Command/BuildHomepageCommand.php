@@ -248,8 +248,8 @@ class BuildHomepageCommand extends Command
     private function aboutHtml(): string
     {
         return '<section class="brunko-home-about">' . "\n"
-            . '  <h2 class="brunko-home-heading">O obchode breed.sk</h2>' . "\n"
-            . '  <p>breed.sk je internetový obchod s nábytkom a bytovými doplnkami pre celú domácnosť. V ponuke nájdete tisíce produktov pre kuchyňu, obývačku, spálňu, kanceláriu aj záhradu. '
+            . '  <h2 class="brunko-home-heading">O obchode NAGA.sk</h2>' . "\n"
+            . '  <p>NAGA.sk je internetový obchod s nábytkom a bytovými doplnkami pre celú domácnosť. V ponuke nájdete tisíce produktov pre kuchyňu, obývačku, spálňu, kanceláriu aj záhradu. '
             . 'Tovar odosielame zo skladu a doručujeme kuriérom, platiť môžete aj na dobierku.</p>' . "\n"
             . '</section>';
     }
